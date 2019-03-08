@@ -26,6 +26,32 @@ class PL(object):
         self.session = requests.Session()
         self.verify = verify
 
+    def add_post(self, project_id, task_id, description, date, taken):
+        """
+        Create new post in PL database related to corresponding project and task with such required information as date,
+        description and time taken.
+        :param project_id: The project ID in PL database corresponding task belongs to.
+        :type project_id: int
+        :param task_id: The task ID in PL database to create new post.
+        :type task_id: int
+        :param description: Relatively short description of the work done as a part of the parent task.
+        :type description: str
+        :param date: The date when work was actually done in `YYYY-MM-DD` format (ISO 8601).
+        :type date: str
+        :param taken: Total amount of minutes spent during work on the task entry.
+        :type taken: int
+        :return: Dictionary object with PL API response content.
+        :rtype: dict
+        """
+        return self.post(
+            endpoint='posts/add',
+            project_id=project_id,
+            task_id=task_id,
+            description=description,
+            date=date,
+            taken=taken
+        )
+
     def list(self, endpoint, **kwargs):
         """
         Wrapper for `PL.post()` method especially to execute requests to `list` PL endpoints.
@@ -67,9 +93,10 @@ class PL(object):
         :return: Dictionary object with keys updated according to PL API specific (hyphens instead of underscores).
         :rtype: dict
         """
+        results = dict()
         for item in items:
-            items[item.replace('_', '-')] = items.pop(item)
-        return items
+            results[item.replace('_', '-')] = items[item]
+        return results
 
     def post(self, endpoint, **kwargs):
         """
@@ -94,3 +121,59 @@ class PL(object):
             return response.json()
         except Exception as ex:
             sys.exit(ex)
+
+
+class TogglAPIClient(object):
+
+    base_url = 'https://toggl.com'
+
+    toggl_api_version = 8
+    toggl_api_url = '{}/api/v{}'.format(base_url, toggl_api_version)
+
+    def __init__(self, api_token, user_agent):
+        self.auth = (api_token, 'api_token')
+        self.session = requests.Session()
+        self.user_agent = user_agent
+
+    def get(self, endpoint, url, **kwargs):
+        try:
+            response = self.session.get(
+                url='{}/{}'.format(url, endpoint),
+                auth=self.auth,
+                params=kwargs
+            )
+            if response.status_code != 200:
+                logging.error(msg=response.content)
+                sys.exit(response.status_code)
+            return response.json()
+        except Exception as ex:
+            sys.exit(ex)
+
+    def select_workspace(self, workspace):
+        for item in self.workspaces():
+            if item['name'] == workspace:
+                return item
+
+    def workspaces(self):
+        return self.get(endpoint='workspaces', url=self.toggl_api_url)
+
+
+class TogglReportsClient(TogglAPIClient):
+
+    base_url = 'https://toggl.com'
+
+    reports_api_version = 2
+    reports_api_url = '{}/reports/api/v{}'.format(base_url, reports_api_version)
+
+    def details(self, workspace, **kwargs):
+        kwargs.update(
+            {
+                'user_agent': self.user_agent,
+                'workspace_id': workspace['id']
+            }
+        )
+        return self.get(
+            endpoint='details',
+            url=self.reports_api_url,
+            **kwargs
+        )

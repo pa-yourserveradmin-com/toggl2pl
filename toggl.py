@@ -6,7 +6,7 @@ import requests
 
 
 API_TOKEN = ''
-WORKSPACE = 'rnd-y'
+WORKSPACE = 'PA'
 WORKSPACE_ID = None
 
 AUTH = (API_TOKEN, 'api_token')
@@ -30,6 +30,7 @@ if not WORKSPACE_ID:
     )
     for workspace in response.json():
         if workspace['name'] == WORKSPACE:
+            print(workspace)
             WORKSPACE_ID = workspace['id']
             break
 

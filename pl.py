@@ -8,7 +8,8 @@ config = {
     'excluded_projects': [
 
     ],
-    'log_level': 'warn'
+    'log_level': 'warn',
+    'tablefmt': 'simple'
 }
 
 headers = ('Client', 'Project', 'Status', 'Assigned')
