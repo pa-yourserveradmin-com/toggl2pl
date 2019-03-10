@@ -58,9 +58,8 @@ pl = PL(
 toggl = TogglReportsClient(api_token=config['toggl']['api_token'], user_agent=APP_KEY)
 
 config['toggl']['workspace'] = toggl.workspaces(name=config['toggl']['workspace'])
-if not config['toggl']['workspace'] or len(config['toggl']['workspace']) > 1:
+if isinstance(config['toggl']['workspace'], list) or not config['toggl']['workspace']:
     sys.exit(yaml.dump(config['toggl']['workspace']))
-
 
 # TODO: Move this code to PL class method or call this code as function
 pl_projects = dict()
@@ -83,6 +82,7 @@ for task in toggl.details(workspace=config['toggl']['workspace'], since=known_ar
     # field is not filed the program must exit and ask to fill task details before continue with export.
     if None in (task['client'], task['project'], task['description']):
         sys.exit(yaml.dump(task))
+    # TODO: Check tasks clients and projects presence in PL here and exit in case project or task does not exist in PL.
     duration = int(task['dur'] / 1000)
     if task['client'] not in tasks:
         tasks.update(
