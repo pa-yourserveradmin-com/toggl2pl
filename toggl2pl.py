@@ -57,7 +57,9 @@ pl = PL(
 )
 toggl = TogglReportsClient(api_token=config['toggl']['api_token'], user_agent=APP_KEY)
 
-config['toggl']['workspace'] = toggl.select_workspace(workspace=config['toggl']['workspace'])
+config['toggl']['workspace'] = toggl.workspaces(name=config['toggl']['workspace'])
+if not config['toggl']['workspace'] or len(config['toggl']['workspace']) > 1:
+    sys.exit(yaml.dump(config['toggl']['workspace']))
 
 
 # TODO: Move this code to PL class method or call this code as function

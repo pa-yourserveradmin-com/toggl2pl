@@ -169,26 +169,20 @@ class TogglAPIClient(object):
         except Exception as ex:
             sys.exit(ex)
 
-    # TODO: Merge select_workspace() and workspaces() methods into workspaces() method with optional filter argument.
-    def select_workspace(self, workspace):
+    def workspaces(self, name=str()):
         """
-        Iterate over list of workspaces available for specified API token and select one based on workspace name.
-        :param workspace: The name of Toggl workspace to fetch details about.
-        :type workspace: str
-        :return: Dictionary object with details about requested workspace.
+        List workspaces available for specified API token with optional ability to query single workspace by its name.
+        :param name: The optional workspace name to filter results.
+        :type name: str
+        :return: Dictionary object which represents single or all workspaces available for specified API token.
         :rtype: dict
         """
-        for item in self.workspaces():
-            if item['name'] == workspace:
-                return item
-
-    def workspaces(self):
-        """
-        List all workspaces available for specified API token.
-        :return: List of dictionaries which represent workspaces available for specified API token.
-        :rtype: list
-        """
-        return self.get(endpoint='workspaces', url=self.toggl_api_url)
+        workspaces = self.get(endpoint='workspaces', url=self.toggl_api_url)
+        if name:
+            for workspace in workspaces:
+                if workspace['name'] == name:
+                    return workspace
+        return workspaces
 
 
 class TogglReportsClient(TogglAPIClient):
