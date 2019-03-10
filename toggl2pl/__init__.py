@@ -1,6 +1,7 @@
 import logging
 import requests
 import sys
+import urllib3
 
 
 class PL(object):
@@ -24,6 +25,8 @@ class PL(object):
             'user-key': user_key
         }
         self.session = requests.Session()
+        if not verify:
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         self.verify = verify
 
     def add_post(self, project_id, task_id, description, date, taken):

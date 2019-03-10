@@ -4,6 +4,8 @@ from datetime import datetime
 from tabulate import tabulate
 from toggl2pl import PL
 from toggl2pl import TogglReportsClient
+import argparse
+import os
 import sys
 import textwrap
 import yaml
@@ -23,39 +25,45 @@ def rounded(minutes):
     return 60
 
 
-config = {
-    'excluded_projects': [
+# The required PL application key used to gather application usage statistic
+APP_KEY = '5e0e5efeea6b4c3833729529667e458b:tIZ9qXPs(HNV&33Q3yT('
 
-    ],
-    'log_level': 'warn',
-    'tablefmt': 'simple',
-}
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    '-c',
+    '--config',
+    help='Path to configuration file (default: {}/.vault-shell/config.yml)'.format(os.environ['HOME']),
+    type=str,
+    default='{}/.vault-shell/config.yml'.format(os.getenv('HOME'))
+)
+parser.add_argument(
+    '-d',
+    '--date',
+    help='The date when work was actually done in `YYYY-MM-DD` format (ISO 8601).',
+    type=str,
+    default=datetime.now().strftime('%Y-%m-%d')
+)
+known_args, unknown_args = parser.parse_known_args()
 
-with open('config.yml', 'r') as fp:
-    config.update(yaml.safe_load(fp))
-
-if not config['verify']:
-    import urllib3
-    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-SINCE = UNTIL = datetime.now().strftime('%Y-%m-%d')
+with open(known_args.config, 'r') as fp:
+    config = yaml.safe_load(fp)
 
 pl = PL(
-    app_key=config['app_key'],
-    base_url=config['base_url'],
+    app_key=APP_KEY,
+    base_url=config['pl']['base_url'],
     log_level=config['log_level'],
-    user_key=config['user_key'],
-    verify=config['verify']
+    user_key=config['pl']['user_key'],
+    verify=config['pl']['verify']
 )
-toggl = TogglReportsClient(api_token=config['api_token'], user_agent=config['app_key'])
+toggl = TogglReportsClient(api_token=config['toggl']['api_token'], user_agent=APP_KEY)
 
-config['workspace'] = toggl.select_workspace(workspace=config['workspace'])
+config['toggl']['workspace'] = toggl.select_workspace(workspace=config['toggl']['workspace'])
 
 
 # TODO: Move this code to PL class method or call this code as function
 pl_projects = dict()
 for project in pl.list_projects()['projects']:
-    if project['name'] in config['excluded_projects']:
+    if project['name'] in config['pl']['excluded_projects']:
         continue
     project['tasks'] = dict()
     for task in pl.list_tasks(project_id=project['id'])['tasks']['data']:
@@ -68,7 +76,7 @@ for project in pl.list_projects()['projects']:
 
 # TODO: Move this code to PL class method or call this code as function
 tasks = dict()
-for task in toggl.details(workspace=config['workspace'], since=SINCE, until=UNTIL)['data']:
+for task in toggl.details(workspace=config['toggl']['workspace'], since=known_args.date, until=known_args.date)['data']:
     # GOTCHA: We want to have at least the next information about task: client, project and description. In case some
     # field is not filed the program must exit and ask to fill task details before continue with export.
     if None in (task['client'], task['project'], task['description']):
@@ -130,7 +138,7 @@ for post in posts:
             project_id=pl_projects[post[0]]['id'],
             task_id=pl_projects[post[0]]['tasks'][post[1]]['id'],
             description=post[2],
-            date=SINCE,
+            date=known_args.date,
             taken=post[4]
         )
     )
