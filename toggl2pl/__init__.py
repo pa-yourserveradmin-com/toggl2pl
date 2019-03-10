@@ -8,12 +8,6 @@ import yaml
 
 class PL(object):
 
-    cache = {
-        'projects': {
-
-        }
-    }
-
     def __init__(self, app_key, base_url, user_key, log_level='warning', verify=True):
         """
         Initialize a new instance of class object to communicate with PL.
@@ -133,20 +127,15 @@ class PL(object):
         except Exception as ex:
             sys.exit(ex)
 
-    def projects(self, excluded_projects=None, refresh=False):
+    def projects(self, excluded_projects=None):
         """
         Wrapper for `list_projects` and `list_tasks` methods to exclude particular PL projects and combine projects data
-        with tasks data into single object with machine-readable structure. Uses internal instance cache to store data
-        between calls.
+        with tasks data into single object with machine-readable structure.
         :param excluded_projects: List of PL projects names to exclude from result.
         :type excluded_projects: list
-        :param refresh: Optional argument to force refresh data cached on PL object instance level.
-        :type refresh: bool
         :return: Dictionary object with combined information about PL projects and their tasks.
         :rtype: dict
         """
-        if self.cache['projects'] and not refresh:
-            return self.cache['projects']
         projects = dict()
         for project in self.list_projects()['projects']:
             if excluded_projects and project['name'] in excluded_projects:
@@ -159,7 +148,6 @@ class PL(object):
                     project['name']: project
                 }
             )
-        self.cache['projects'] = projects
         return projects
 
 
