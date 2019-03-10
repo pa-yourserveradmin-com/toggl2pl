@@ -32,7 +32,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     '-c',
     '--config',
-    help='Path to configuration file (default: {}/.vault-shell/config.yml)'.format(os.environ['HOME']),
+    help='Path to configuration file (default: ~/.vault-shell/config.yml)',
     type=str,
     default='{}/.vault-shell/config.yml'.format(os.getenv('HOME'))
 )
@@ -61,21 +61,7 @@ config['toggl']['workspace'] = toggl.workspaces(name=config['toggl']['workspace'
 if isinstance(config['toggl']['workspace'], list) or not config['toggl']['workspace']:
     sys.exit(yaml.dump(config['toggl']['workspace']))
 
-# TODO: Move this code to PL class method or call this code as function
-pl_projects = dict()
-for project in pl.list_projects()['projects']:
-    if project['name'] in config['pl']['excluded_projects']:
-        continue
-    project['tasks'] = dict()
-    for task in pl.list_tasks(project_id=project['id'])['tasks']['data']:
-        project['tasks'][task['title']] = task
-    pl_projects.update(
-        {
-            project['name']: project
-        }
-    )
-
-# TODO: Move this code to PL class method or call this code as function
+# TODO: Move this code to Toggl class method or call this code as function
 tasks = dict()
 for task in toggl.details(workspace=config['toggl']['workspace'], since=known_args.date, until=known_args.date)['data']:
     # GOTCHA: We want to have at least the next information about task: client, project and description. In case some
@@ -137,8 +123,8 @@ except KeyboardInterrupt:
 for post in posts:
     print(
         pl.add_post(
-            project_id=pl_projects[post[0]]['id'],
-            task_id=pl_projects[post[0]]['tasks'][post[1]]['id'],
+            project_id=pl.projects(excluded_projects=config['pl']['excluded_projects'])[post[0]]['id'],
+            task_id=pl.projects(excluded_projects=config['pl']['excluded_projects'])[post[0]]['tasks'][post[1]]['id'],
             description=post[2],
             date=known_args.date,
             taken=post[4]
