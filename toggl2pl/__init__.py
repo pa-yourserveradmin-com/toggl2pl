@@ -107,7 +107,7 @@ class PL(object):
         :param endpoint: The PL API endpoint to send data using HTTP POST request.
         :type endpoint: str
         :param kwargs: Request parameters specific to each endpoint (please see the official PL API reference).
-        :return: Dictionary object with remote PL API response content.
+        :return: Dictionary object with PL API endpoint response content.
         :rtype: dict
         """
         kwargs = self.normalize(items=kwargs)
@@ -134,11 +134,28 @@ class TogglAPIClient(object):
     toggl_api_url = '{}/api/v{}'.format(base_url, toggl_api_version)
 
     def __init__(self, api_token, user_agent):
+        """
+        Initialize a new instance of class object to communicate with Toggl.
+        :param api_token: The unique authentication token to use instead of username and password.
+        :type api_token: str
+        :param user_agent: The required user agent identifier used to gather application usage statistic.
+        :type user_agent: str
+        """
         self.auth = (api_token, 'api_token')
         self.session = requests.Session()
         self.user_agent = user_agent
 
-    def get(self, endpoint, url, **kwargs):
+    def get(self, endpoint, url=toggl_api_url, **kwargs):
+        """
+        Send provided keyword arguments to the combination of Toggl API URL and endpoint using HTTP GET request.
+        :param endpoint: The Toggl API endpoint to send data using HTTP GET request.
+        :type endpoint: str
+        :param url: The Toggl API URL to send HTTP GET requests.
+        :type url: str
+        :param kwargs: Request parameters specific to each endpoint (please see the official Toggl API reference).
+        :return: Dictionary object with Toggl API endpoint response content.
+        :rtype: dict
+        """
         try:
             response = self.session.get(
                 url='{}/{}'.format(url, endpoint),
@@ -152,12 +169,25 @@ class TogglAPIClient(object):
         except Exception as ex:
             sys.exit(ex)
 
+    # TODO: Merge select_workspace() and workspaces() methods into workspaces() method with optional filter argument.
     def select_workspace(self, workspace):
+        """
+        Iterate over list of workspaces available for specified API token and select one based on workspace name.
+        :param workspace: The name of Toggl workspace to fetch details about.
+        :type workspace: str
+        :return: Dictionary object with details about requested workspace.
+        :rtype: dict
+        """
         for item in self.workspaces():
             if item['name'] == workspace:
                 return item
 
     def workspaces(self):
+        """
+        List all workspaces available for specified API token.
+        :return: List of dictionaries which represent workspaces available for specified API token.
+        :rtype: list
+        """
         return self.get(endpoint='workspaces', url=self.toggl_api_url)
 
 
@@ -168,7 +198,28 @@ class TogglReportsClient(TogglAPIClient):
     reports_api_version = 2
     reports_api_url = '{}/reports/api/v{}'.format(base_url, reports_api_version)
 
+    def get(self, endpoint, url=reports_api_url, **kwargs):
+        """
+        Send provided keyword arguments to the combination of Toggl Reports API URL and endpoint using HTTP GET request.
+        :param endpoint: The Toggl Reports API endpoint to send data using HTTP GET request.
+        :type endpoint: str
+        :param url: The Toggl Reports API URL to send HTTP GET requests.
+        :type url: str
+        :param kwargs: Request parameters specific to each endpoint (please see the official Toggl API reference).
+        :return: Dictionary object with Toggl Reports API endpoint response content.
+        :rtype: dict
+        """
+        return super().get(endpoint=endpoint, url=url, **kwargs)
+
     def details(self, workspace, **kwargs):
+        """
+        Fetch detailed information about tasks related to the specified Toggl workspace.
+        :param workspace: Toggl workspace to query information about tasks.
+        :type workspace: dict
+        :param kwargs: Parameters to query Toggl Reports API (please see official Toggl Reports API for details).
+        :return: Dictionary object with detailed information about recorded tasks.
+        :rtype: dict
+        """
         kwargs.update(
             {
                 'user_agent': self.user_agent,
@@ -177,6 +228,5 @@ class TogglReportsClient(TogglAPIClient):
         )
         return self.get(
             endpoint='details',
-            url=self.reports_api_url,
             **kwargs
         )
