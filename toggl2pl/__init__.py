@@ -134,6 +134,17 @@ class PL(object):
             sys.exit(ex)
 
     def projects(self, excluded_projects=None, refresh=False):
+        """
+        Wrapper for `list_projects` and `list_tasks` methods to exclude particular PL projects and combine projects data
+        with tasks data into single object with machine-readable structure. Uses internal instance cache to store data
+        between calls.
+        :param excluded_projects: List of PL projects names to exclude from result.
+        :type excluded_projects: list
+        :param refresh: Optional argument to force refresh data cached on PL object instance level.
+        :type refresh: bool
+        :return: Dictionary object with combined information about PL projects and their tasks.
+        :rtype: dict
+        """
         if self.cache['projects'] and not refresh:
             return self.cache['projects']
         projects = dict()
@@ -172,6 +183,13 @@ class TogglAPIClient(object):
         self.user_agent = user_agent
 
     def clients(self, workspace):
+        """
+        Wrapper for `list_clients` method to convert list of Toggl clients into machine-readable format.
+        :param workspace: Dictionary object which represents Toggl workspace.
+        :type workspace: dict
+        :return: Dictionary object with detailed information about Toggl clients.
+        :rtype: dict
+        """
         clients = dict()
         for client in self.list_clients(workspace=workspace):
             clients[client['name']] = client
@@ -235,6 +253,24 @@ class TogglReportsClient(TogglAPIClient):
     reports_api_version = 2
     reports_api_url = '{}/reports/api/v{}'.format(base_url, reports_api_version)
 
+    @staticmethod
+    def fmt(description, width=80):
+        """
+        Modify provided description text to make it readable and ensure all posts use the same canonical format.
+        :param description: Toggl post description text to format.
+        :type description: str
+        :param width: Optional argument to set the maximum length of wrapped lines.
+        :type width: int
+        :return: Description text rewritten in canonical format.
+        :rtype: str
+        """
+        if not description.startswith('* '):
+            description = '* {}'.format(description)
+        if not description.endswith('.'):
+            description += '.'
+        description = '\n'.join(textwrap.wrap(description.strip(), width=width))
+        return description
+
     def get(self, endpoint, url=reports_api_url, **kwargs):
         """
         Send provided keyword arguments to the combination of Toggl Reports API URL and endpoint using HTTP GET request.
@@ -278,16 +314,19 @@ class TogglReportsClient(TogglAPIClient):
         """
         return super().get(endpoint='workspaces/{}/clients'.format(workspace['id']))
 
-    @staticmethod
-    def normalize(description, width=80):
-        if not description.startswith('* '):
-            description = '* {}'.format(description)
-        if not description.endswith('.'):
-            description += '.'
-        description = '\n'.join(textwrap.wrap(description.strip(), width=width))
-        return description
-
     def posts(self, workspace, since, until):
+        """
+        High-level wrapper for `tasks` method to aggregate Toggl tasks by projects, format descriptions and round total
+        amount of minutes per project.
+        :param workspace: Dictionary object which represents Toggl workspace.
+        :type workspace: dict
+        :param since: The start date in ISO 8601 date (YYYY-MM-DD) format to query Toggl Reports API for tasks.
+        :type since: str
+        :param until: The end date in ISO 8601 date (YYYY-MM-DD) format to query Toggl Reports API for tasks.
+        :type until: str
+        :return: Normalized list of Toggl tasks aggregated by projects.
+        :rtype: list
+        """
         posts = list()
         for client, projects in sorted(self.tasks(workspace, since, until).items()):
             for project, data in sorted(projects.items()):
@@ -295,7 +334,7 @@ class TogglReportsClient(TogglAPIClient):
                 descriptions = list()
                 for description, duration in sorted(data.items()):
                     durations += duration
-                    descriptions.append(self.normalize(description=description))
+                    descriptions.append(self.fmt(description=description))
                 minutes, seconds = divmod(durations, 60)
                 duration = minutes + round(seconds / 60)
                 hours, minutes = divmod(duration, 60)
@@ -311,6 +350,17 @@ class TogglReportsClient(TogglAPIClient):
         return posts
 
     def tasks(self, workspace, since, until):
+        """
+        Combine clients, projects and tasks information into single object with machine-readable format.
+        :param workspace: Dictionary object which represents Toggl workspace.
+        :type workspace: dict
+        :param since: The start date in ISO 8601 date (YYYY-MM-DD) format to query Toggl Reports API for tasks.
+        :type since: str
+        :param until: The end date in ISO 8601 date (YYYY-MM-DD) format to query Toggl Reports API for tasks.
+        :type until: str
+        :return: Dictionary object with machine-readable information about Toggl tasks during specified range of dates.
+        :rtype: dict
+        """
         tasks = dict()
         for task in self.details(workspace=workspace, since=since, until=until)['data']:
             # GOTCHA: We want to have at least the next information about task: client, project and description. In case
@@ -346,6 +396,13 @@ class TogglReportsClient(TogglAPIClient):
 
 
 def rounded(minutes):
+    """
+    Round the number of provided minutes based on the amount of minutes.
+    :param minutes: Real number of minutes to apply round operation on.
+    :type minutes: int
+    :return: Number of minutes rounded based on amount og real amount of minutes.
+    :rtype: int
+    """
     if minutes == 0:
         return 5
     elif 0 < minutes <= 5:
