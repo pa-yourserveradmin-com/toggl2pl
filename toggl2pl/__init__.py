@@ -1,10 +1,18 @@
 import logging
 import requests
 import sys
+import textwrap
 import urllib3
+import yaml
 
 
 class PL(object):
+
+    cache = {
+        'projects': {
+
+        }
+    }
 
     def __init__(self, app_key, base_url, user_key, log_level='warning', verify=True):
         """
@@ -125,6 +133,24 @@ class PL(object):
         except Exception as ex:
             sys.exit(ex)
 
+    def projects(self, excluded_projects=None, refresh=False):
+        if self.cache['projects'] and not refresh:
+            return self.cache['projects']
+        projects = dict()
+        for project in self.list_projects()['projects']:
+            if excluded_projects and project['name'] in excluded_projects:
+                continue
+            project['tasks'] = dict()
+            for task in self.list_tasks(project_id=project['id'])['tasks']['data']:
+                project['tasks'][task['title']] = task
+            projects.update(
+                {
+                    project['name']: project
+                }
+            )
+        self.cache['projects'] = projects
+        return projects
+
 
 class TogglAPIClient(object):
 
@@ -224,3 +250,83 @@ class TogglReportsClient(TogglAPIClient):
             endpoint='details',
             **kwargs
         )
+
+    @staticmethod
+    def normalize(description, width=80):
+        if not description.startswith('* '):
+            description = '* {}'.format(description)
+        if not description.endswith('.'):
+            description += '.'
+        description = '\n'.join(textwrap.wrap(description.strip(), width=width))
+        return description
+
+    def posts(self, workspace, since, until):
+        posts = list()
+        for client, projects in sorted(self.tasks(workspace, since, until).items()):
+            for project, data in sorted(projects.items()):
+                durations = 0
+                descriptions = list()
+                for description, duration in sorted(data.items()):
+                    durations += duration
+                    descriptions.append(self.normalize(description=description))
+                minutes, seconds = divmod(durations, 60)
+                duration = minutes + round(seconds / 60)
+                hours, minutes = divmod(duration, 60)
+                posts.append(
+                    [
+                        client,
+                        project,
+                        '\n'.join(descriptions),
+                        duration,
+                        hours * 60 + rounded(minutes)
+                    ]
+                )
+        return posts
+
+    def tasks(self, workspace, since, until):
+        tasks = dict()
+        for task in self.details(workspace=workspace, since=since, until=until)['data']:
+            # GOTCHA: We want to have at least the next information about task: client, project and description. In case
+            # some field is not filed the program must exit and ask to fill task details before continue with export.
+            if None in (task['client'], task['project'], task['description']):
+                sys.exit(yaml.dump(task))
+            duration = int(task['dur'] / 1000)
+            if task['client'] not in tasks:
+                tasks.update(
+                    {
+                        task['client']: {
+                            task['project']: {
+                                task['description']: duration
+                            }
+                        }
+                    }
+                )
+                continue
+            if task['project'] not in tasks[task['client']]:
+                tasks[task['client']][task['project']] = {
+                    task['description']: duration
+                }
+                continue
+            if task['description'] not in tasks[task['client']][task['project']]:
+                tasks[task['client']][task['project']].update(
+                    {
+                        task['description']: duration
+                    }
+                )
+                continue
+            tasks[task['client']][task['project']][task['description']] += duration
+        return tasks
+
+
+def rounded(minutes):
+    if minutes == 0:
+        return 5
+    elif 0 < minutes <= 5:
+        return 5
+    elif 5 < minutes <= 15:
+        return 15
+    elif 15 < minutes <= 30:
+        return 30
+    elif 30 < minutes <= 45:
+        return 45
+    return 60
