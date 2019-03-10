@@ -171,6 +171,13 @@ class TogglAPIClient(object):
         self.session = requests.Session()
         self.user_agent = user_agent
 
+    def clients(self, workspace):
+        clients = dict()
+        for client in self.list_clients(workspace=workspace):
+            clients[client['name']] = client
+            del clients[client['name']]['name']
+        return clients
+
     def get(self, endpoint, url=toggl_api_url, **kwargs):
         """
         Send provided keyword arguments to the combination of Toggl API URL and endpoint using HTTP GET request.
@@ -194,6 +201,16 @@ class TogglAPIClient(object):
             return response.json()
         except Exception as ex:
             sys.exit(ex)
+
+    def list_clients(self, workspace):
+        """
+        List clients corresponding to the particular Toggl workspace.
+        :param workspace: Dictionary object which represents Toggl workspace.
+        :type workspace: dict
+        :return: List of dictionaries with clients descriptions.
+        :rtype: list
+        """
+        return self.get(endpoint='workspaces/{}/clients'.format(workspace['id']))
 
     def workspaces(self, name=str()):
         """
@@ -250,6 +267,16 @@ class TogglReportsClient(TogglAPIClient):
             endpoint='details',
             **kwargs
         )
+
+    def list_clients(self, workspace):
+        """
+        List clients corresponding to the particular Toggl workspace.
+        :param workspace: Dictionary object which represents Toggl workspace.
+        :type workspace: dict
+        :return: List of dictionaries with clients descriptions.
+        :rtype: list
+        """
+        return super().get(endpoint='workspaces/{}/clients'.format(workspace['id']))
 
     @staticmethod
     def normalize(description, width=80):
