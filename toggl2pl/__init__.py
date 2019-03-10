@@ -6,6 +6,12 @@ import urllib3
 
 class PL(object):
 
+    cache = {
+        'projects': {
+
+        }
+    }
+
     def __init__(self, app_key, base_url, user_key, log_level='warning', verify=True):
         """
         Initialize a new instance of class object to communicate with PL.
@@ -124,6 +130,24 @@ class PL(object):
             return response.json()
         except Exception as ex:
             sys.exit(ex)
+
+    def projects(self, excluded_projects=None, refresh=False):
+        if self.cache['projects'] and not refresh:
+            return self.cache['projects']
+        projects = dict()
+        for project in self.list_projects()['projects']:
+            if excluded_projects and project['name'] in excluded_projects:
+                continue
+            project['tasks'] = dict()
+            for task in self.list_tasks(project_id=project['id'])['tasks']['data']:
+                project['tasks'][task['title']] = task
+            projects.update(
+                {
+                    project['name']: project
+                }
+            )
+        self.cache['projects'] = projects
+        return projects
 
 
 class TogglAPIClient(object):
