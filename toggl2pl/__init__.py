@@ -184,6 +184,24 @@ class TogglAPIClient(object):
             del clients[client['name']]['name']
         return clients
 
+    def create_client(self, name, workspace):
+        """
+        Create new client entity in corresponding Toggl workspace.
+        :param name: The name of new Toggl client to create.
+        :type name: str
+        :param workspace: Dictionary object which represents Toggl workspace.
+        :type workspace: dict
+        :return: Dictionary object with information about the newly created Toggl client.
+        :rtype: dict
+        """
+        return self.post(
+            endpoint='clients',
+            client={
+                'name': name,
+                'wid': workspace['id']
+            }
+        )['data']
+
     def get(self, endpoint, url=toggl_api_url, **kwargs):
         """
         Send provided keyword arguments to the combination of Toggl API URL and endpoint using HTTP GET request.
@@ -217,6 +235,30 @@ class TogglAPIClient(object):
         :rtype: list
         """
         return self.get(endpoint='workspaces/{}/clients'.format(workspace['id']))
+
+    def post(self, endpoint, url=toggl_api_url, **kwargs):
+        """
+        Send provided keyword arguments to the combination of Toggl API URL and endpoint using HTTP POST request.
+        :param endpoint: The Toggl API endpoint to send data using HTTP POST request.
+        :type endpoint: str
+        :param url: The Toggl API URL to send HTTP POST requests.
+        :type url: str
+        :param kwargs: Request payload specific to each endpoint (please see the official Toggl API reference).
+        :return: Dictionary object with Toggl API endpoint response content.
+        :rtype: dict
+        """
+        try:
+            response = self.session.post(
+                url='{}/{}'.format(url, endpoint),
+                auth=self.auth,
+                json=kwargs
+            )
+            if response.status_code != 200:
+                logging.error(msg=response.content)
+                sys.exit(response.status_code)
+            return response.json()
+        except Exception as ex:
+            sys.exit(ex)
 
     def workspaces(self, name=str()):
         """
