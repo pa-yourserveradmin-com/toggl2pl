@@ -202,6 +202,27 @@ class TogglAPIClient(object):
             }
         )['data']
 
+    def create_project(self, cid, name, wid):
+        """
+        Create a new client project in the particular Toggl workspace.
+        :param cid: The client ID to associate project with.
+        :type cid: int
+        :param name: The name to use for a new project.
+        :type name: str
+        :param wid: The Toggl workspace ID to create project.
+        :type wid: int
+        :return: Dictionary object with information about the newly created Toggl project.
+        :rtype: dict
+        """
+        return self.post(
+            endpoint='projects',
+            project={
+                'cid': cid,
+                'name': name,
+                'wid': wid
+            }
+        )['data']
+
     def get(self, endpoint, url=toggl_api_url, **kwargs):
         """
         Send provided keyword arguments to the combination of Toggl API URL and endpoint using HTTP GET request.
@@ -378,6 +399,28 @@ class TogglReportsClient(TogglAPIClient):
                     ]
                 )
         return posts
+
+    def projects(self, workspace):
+        """
+        Fetch list of the particular workspace projects and rewrite it into dictionary with machine-readable structure.
+        :param workspace: Dictionary object which represents Toggl workspace.
+        :type workspace: dict
+        :return: Dictionary object with machine-readable information about projects in the specified workspace.
+        :rtype: dict
+        """
+        projects = dict()
+        for item in super().get(endpoint='workspaces/{}/projects'.format(workspace['id'])):
+            if item['cid'] not in projects:
+                projects.update(
+                    {
+                        item['cid']: [
+                            item['name']
+                        ]
+                    }
+                )
+                continue
+            projects[item['cid']].append(item['name'])
+        return projects
 
     def tasks(self, workspace, since, until):
         """
