@@ -61,6 +61,9 @@ for project in projects:
 
 posts = toggl.posts(workspace=config['toggl']['workspace'], since=known_args.date, until=known_args.date)
 
+if not posts:
+    sys.exit('There are no posts for {} yet. Please post something and try again.'.format(known_args.date))
+
 headers = ('Client', 'Project', 'Description', 'Duration (min)', 'Rounded (min)')
 print(tabulate(tabular_data=posts, headers=headers, tablefmt=config['tablefmt']))
 
