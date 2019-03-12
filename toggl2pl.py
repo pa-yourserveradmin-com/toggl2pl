@@ -49,6 +49,8 @@ if isinstance(config['toggl']['workspace'], list) or not config['toggl']['worksp
 clients = toggl.clients(workspace=config['toggl']['workspace'])
 projects = pl.projects(excluded_projects=config['pl']['excluded_projects'])
 
+toggl_projects = toggl.projects(workspace=config['toggl']['workspace'])
+
 for project in projects:
     if project not in clients:
         client = toggl.create_client(name=project, workspace=config['toggl']['workspace'])
@@ -58,6 +60,17 @@ for project in projects:
             }
         )
         del clients[client['name']]['name']
+    if clients[project]['id'] not in toggl_projects:
+        toggl_projects.update(
+            {
+                clients[project]['id']: [
+
+                ]
+            }
+        )
+    for item in projects[project]['tasks']:
+        if item not in toggl_projects[clients[project]['id']]:
+            print(toggl.create_project(cid=clients[project]['id'], name=item, wid=config['toggl']['workspace']['id']))
 
 posts = toggl.posts(workspace=config['toggl']['workspace'], since=known_args.date, until=known_args.date)
 
