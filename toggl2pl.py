@@ -46,8 +46,25 @@ config['toggl']['workspace'] = toggl.workspaces(name=config['toggl']['workspace'
 if isinstance(config['toggl']['workspace'], list) or not config['toggl']['workspace']:
     sys.exit(yaml.dump(config['toggl']['workspace']))
 
-headers = ('Client', 'Project', 'Description', 'Duration (min)', 'Rounded (min)')
+clients = toggl.clients(workspace=config['toggl']['workspace'])
+projects = pl.projects(excluded_projects=config['pl']['excluded_projects'])
+
+for project in projects:
+    if project not in clients:
+        client = toggl.create_client(name=project, workspace=config['toggl']['workspace'])
+        clients.update(
+            {
+                client['name']: client
+            }
+        )
+        del clients[client['name']]['name']
+
 posts = toggl.posts(workspace=config['toggl']['workspace'], since=known_args.date, until=known_args.date)
+
+if not posts:
+    sys.exit('There are no posts for {} yet. Please post something and try again.'.format(known_args.date))
+
+headers = ('Client', 'Project', 'Description', 'Duration (min)', 'Rounded (min)')
 print(tabulate(tabular_data=posts, headers=headers, tablefmt=config['tablefmt']))
 
 try:
@@ -59,8 +76,8 @@ for post in posts:
     client, project, description, duration, rounded = post
     print(
         pl.add_post(
-            project_id=pl.projects(excluded_projects=config['pl']['excluded_projects'])[client]['id'],
-            task_id=pl.projects(excluded_projects=config['pl']['excluded_projects'])[client]['tasks'][project]['id'],
+            project_id=projects[client]['id'],
+            task_id=projects[client]['tasks'][project]['id'],
             description=description,
             date=known_args.date,
             taken=rounded
