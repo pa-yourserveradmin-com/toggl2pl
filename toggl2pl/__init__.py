@@ -255,7 +255,10 @@ class TogglAPIClient(object):
         :return: List of dictionaries with clients descriptions.
         :rtype: list
         """
-        return self.get(endpoint='workspaces/{}/clients'.format(workspace['id']))
+        clients = self.get(endpoint='workspaces/{}/clients'.format(workspace['id']))
+        if clients:
+            return clients
+        return dict()
 
     def post(self, endpoint, url=toggl_api_url, **kwargs):
         """
@@ -363,7 +366,10 @@ class TogglReportsClient(TogglAPIClient):
         :return: List of dictionaries with clients descriptions.
         :rtype: list
         """
-        return super().get(endpoint='workspaces/{}/clients'.format(workspace['id']))
+        clients = super().get(endpoint='workspaces/{}/clients'.format(workspace['id']))
+        if clients:
+            return clients
+        return dict()
 
     def posts(self, workspace, since, until):
         """
@@ -409,6 +415,9 @@ class TogglReportsClient(TogglAPIClient):
         :rtype: dict
         """
         projects = dict()
+        data = super().get(endpoint='workspaces/{}/projects'.format(workspace['id']))
+        if not data:
+            return projects
         for item in super().get(endpoint='workspaces/{}/projects'.format(workspace['id'])):
             if item['cid'] not in projects:
                 projects.update(
