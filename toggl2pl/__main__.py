@@ -19,9 +19,9 @@ def main():
     parser.add_argument(
         '-c',
         '--config',
-        help='Path to configuration file (default: ~/.vault-shell/config.yml)',
+        help='Path to configuration file (default: ~/.toggl2pl/config.yml)',
         type=str,
-        default='{}/.vault-shell/config.yml'.format(os.getenv('HOME'))
+        default='{}/.toggl2pl/config.yml'.format(os.getenv('HOME'))
     )
     parser.add_argument(
         '-d',

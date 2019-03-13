@@ -1,0 +1,12 @@
+---
+log_level: warn                                  # The default logging level to use (please note that info and debug may cause a lot of output).
+pl:
+  base_url: https://pl.itcraft.co/api/client-v1  # The PL instance API URL to use (can be changed to sandbox URL).
+  excluded_projects:                             # The list of PL projects to exclude from sync into Toggl workspace.
+    - Diseases - ND13
+  user_key: ''                                   # The personal PL user-key which can be found by the link: https://pl.itcraft.co/api/user-key
+  verify: true                                   # Optional field which allows to bypass TLS certificate verification in case of using sandbox instance.
+tablefmt: fancy_grid                             # Recommended formats are: plain, simple, rst and fancy_grid.
+toggl:
+  api_token: ''                                  # The Toggl API token which can be found by the link: https://toggl.com/app/profile
+  workspace: ''                                  # The Toggl case sensitive workspace name to look for clients, projects and fetch time entries.
