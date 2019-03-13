@@ -477,22 +477,17 @@ class TogglReportsClient(TogglAPIClient):
         return tasks
 
 
-def rounded(minutes):
+def rounded(minutes, base=5):
     """
     Round the number of provided minutes based on the amount of minutes.
     :param minutes: Real number of minutes to apply round operation on.
     :type minutes: int
+    :param base: The base number of minutes to use in rounding.
+    :type base: int
     :return: Number of minutes rounded based on amount og real amount of minutes.
     :rtype: int
     """
-    if minutes == 0:
-        return 5
-    elif 0 < minutes <= 5:
-        return 5
-    elif 5 < minutes <= 15:
-        return 15
-    elif 15 < minutes <= 30:
-        return 30
-    elif 30 < minutes <= 45:
-        return 45
-    return 60
+    div, mod = divmod(minutes, base)
+    if round(float(mod) / base):
+        return div * base + 5
+    return div * base
