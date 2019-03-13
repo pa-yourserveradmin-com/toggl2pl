@@ -11,7 +11,7 @@ import yaml
 
 
 # The required PL application key used to gather application usage statistic
-APP_KEY = '5e0e5efeea6b4c3833729529667e458b:tIZ9qXPs(HNV&33Q3yT('
+APP_KEY = 'fba04c0786f881822dd9f7aa0d2530c6:o@$s^^JG8a4w9lgJcPH*'
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
