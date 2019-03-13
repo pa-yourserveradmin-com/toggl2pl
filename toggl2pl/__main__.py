@@ -11,6 +11,7 @@ import yaml
 
 # The required PL application key used to gather application usage statistic
 APP_KEY = 'fba04c0786f881822dd9f7aa0d2530c6:o@$s^^JG8a4w9lgJcPH*'
+ROUND_BASE = os.getenv('ROUND_BASE', 5)
 
 
 def main():
@@ -28,6 +29,12 @@ def main():
         help='The date when work was actually done in `YYYY-MM-DD` format (default: current day).',
         type=str,
         default=datetime.now().strftime('%Y-%m-%d')
+    )
+    parser.add_argument(
+        '-r',
+        '--round',
+        help='Round the number of minutes spent on each project to +/- {} minutes.'.format(ROUND_BASE),
+        action='store_true'
     )
     known_args, unknown_args = parser.parse_known_args()
 
@@ -96,6 +103,6 @@ def main():
                 task_id=projects[client]['tasks'][project]['id'],
                 description=description,
                 date=known_args.date,
-                taken=rounded
+                taken=rounded if known_args.round else duration
             )
         )
