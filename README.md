@@ -65,6 +65,7 @@ deployed into the root of the cloned project repository:
 ```bash
 virtualenv venv
 source venv/bin/activate
+pip install --requirement requirements.txt
 ```
 
 In case of no issues with Python virtual environment setup, now you should be
