@@ -14,7 +14,7 @@
 - [Functional](#functional)
   - [Core functional](#core-functional)
   - [Features](#features)
-  - [Roadmap](#roadmap)
+- [Roadmap](#roadmap)
 - [Internals](#internals)
 
 The project goal is to create simple to use interface to export time tracked with
@@ -22,9 +22,9 @@ The project goal is to create simple to use interface to export time tracked wit
 
 ## Requirements
 
-The module is written in pure Python and its work verified with Python versions
-`2.7` and `3.7`, so it most likely will work with all Python `3.x` versions, but
-that is not yet verified.
+The module is written in pure Python and its work verified with Python `3.x` and
+support for Python `2.7` (and below) is not planned since Python 2.7 will not be
+maintained past January 1, 2020.
 
 As far as there are no low-level system calls (at least now) the module should
 be platform independent, i.e. work on any platform where Python is available.
@@ -170,7 +170,7 @@ The list of features is not yet ready, but the next helpers already implemented:
   possible cases, but at least common things can and already partially done).
 - posts time can be optionally rounded by using internally discussed rules.
 
-### Roadmap
+## Roadmap
 
 There is a high-level implementation plan which may change with time depending
 on external factors and ideas:
@@ -203,7 +203,7 @@ to provide flexible reports and analytic mechanisms (for each user and for teams
 The module is designed to work with time trackers over HTTP API, so in case of
 any questions, please refer to their official documentation in the first place:
 
-- [Project Laboratory][pl_api_docs]
+- [Project Laboratory API Documentation][pl_api_docs]
 - [Toggl API Documentation][toggl_api_docs]
 
 [cx_Freeze]: https://anthony-tuininga.github.io/cx_Freeze/
