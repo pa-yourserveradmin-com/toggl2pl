@@ -177,7 +177,7 @@ on external factors and ideas:
 
 * [x] create a minimal set of logic to implement the core functional.
 * [x] create command line interface to use already implemented logic.
-* [ ] tune output format and information to make it useful and easy to understand.
+* [x] tune output format and information to make it useful and easy to understand.
 * [ ] document existing code, CLI flags and configuration options with Sphinx.
 * [ ] compile Python code to statically linked executable files (using [cx_Freeze][cx_Freeze]
   or [PyInstaller][PyInstaller]) to avoid dependency on Python itself and its

@@ -1,5 +1,6 @@
 from datetime import datetime
 from tabulate import tabulate
+from tqdm import tqdm
 from time import sleep
 from toggl2pl import PL
 from toggl2pl import TogglReportsClient
@@ -95,14 +96,12 @@ def main():
     except KeyboardInterrupt:
         sys.exit('\nExport interrupted, cancelling operation...')
 
-    for post in posts:
+    for post in tqdm(posts, desc='posts'):
         client, project, description, duration, rounded = post
-        print(
-            pl.add_post(
-                project_id=projects[client]['id'],
-                task_id=projects[client]['tasks'][project]['id'],
-                description=description,
-                date=known_args.date,
-                taken=rounded if known_args.round else duration
-            )
+        pl.add_post(
+            project_id=projects[client]['id'],
+            task_id=projects[client]['tasks'][project]['id'],
+            description=description,
+            date=known_args.date,
+            taken=rounded if known_args.round else duration
         )
