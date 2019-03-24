@@ -1,0 +1,42 @@
+---
+variables:
+  PACKAGE_NAME: 'toggl2pl'
+  PACKAGE_VERSION: '1.0.0'
+
+stages:
+  - build
+  - test
+
+build:fc29:
+  artifacts:
+    paths:
+      - ${PACKAGE_NAME}-${PACKAGE_VERSION}-1${DIST}.x86_64.rpm
+    expire_in: 1 hrs
+  before_script:
+    - yum --assumeyes install gcc python-virtualenv python3-virtualenv rpm-build
+    - virtualenv --python=python3 /opt/${PACKAGE_NAME}
+    - echo '%_topdir %(pwd)' > ~/.rpmmacros
+  image: fedora:29
+  script:
+    - /opt/${PACKAGE_NAME}/bin/pip install -r requirements.txt
+    - /opt/${PACKAGE_NAME}/bin/python setup.py sdist --dist-dir SOURCES
+    - rpmbuild -ba -D "dist ${DIST}" SPECS/${PACKAGE_NAME}.spec
+    - mv -fv RPMS/x86_64/${PACKAGE_NAME}-${PACKAGE_VERSION}-1${DIST}.x86_64.rpm .
+  stage: build
+  tags:
+    - docker
+  variables:
+    DIST: .fc29
+
+test:fc29:
+  dependencies:
+    - build:fc29
+  image: fedora:29
+  script:
+    - yum --assumeyes install ${PACKAGE_NAME}-${PACKAGE_VERSION}-1${DIST}.x86_64.rpm
+    - ${PACKAGE_NAME} --help
+  stage: test
+  tags:
+    - docker
+  variables:
+    DIST: .fc29

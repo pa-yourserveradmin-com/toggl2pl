@@ -1,3 +1,6 @@
+%global debug_package %{nil}
+%global _build_id_links none
+
 Name:		toggl2pl
 Version:	1.0.0
 Release:	1%{?dist}
@@ -8,7 +11,6 @@ URL:		https://git-y.yourserveradmin.com/pa/toggl2pl
 Source0:	%{name}-%{version}.tar.gz
 
 BuildArch:	x86_64
-
 AutoReq:	no
 
 Packager:	Andrew Poltavchenko <pa@yourserveradmin.com>
