@@ -8,7 +8,6 @@ URL:		https://git-y.yourserveradmin.com/pa/toggl2pl
 Source0:	%{name}-%{version}.tar.gz
 
 BuildArch:	x86_64
-BuildRequires:	gcc python-virtualenv rpm-build
 
 AutoReq:	no
 
@@ -20,12 +19,9 @@ Vendor:		YourServerAdmin.COM
 
 %prep
 %setup -q
-virtualenv --python=python3 venv
 
 %build
-source venv/bin/activate
-pip install -r requirements.txt
-pyinstaller \
+/opt/%{name}/bin/pyinstaller \
   --onefile \
   --name=%{name} \
   scripts/%{name}
