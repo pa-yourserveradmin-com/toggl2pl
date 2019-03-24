@@ -2,6 +2,7 @@
 build
 dist
 toggl2pl.spec
+!SPECS/toggl2pl.spec
 venv
 *.pyc
 *.pyo
