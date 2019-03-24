@@ -1,10 +1,15 @@
 # python-toggl2pl
 
+Python module and tool to simplify import of time entries from [Toggl][toggl]
+into [PL][pl] (Project Laboratory).
+
 - [Requirements](#requirements)
 - [Usage](#usage)
   - [Installation](#installation)
     - [Development](#development)
     - [Production](#production)
+      - [System packages](#system-packages)
+      - [Python module](#python-module)
   - [Command line interface](#command-line-interface)
     - [Configuration](#configuration)
     - [Examples](#examples)
@@ -17,13 +22,11 @@
 - [Roadmap](#roadmap)
 - [Internals](#internals)
 
-The project goal is to create simple to use interface to export time tracked with
-[Toggl][toggl] into [PL][pl] (Project Laboratory).
-
 ## Requirements
 
-The module is written in pure Python and its work verified with Python `3.x` and
-support for Python `2.7` (and below) is not planned since Python 2.7 will not be
+The module is written in pure Python and its work verified with Python `3.x`.
+
+Support for Python `2.7` (and older) is not planned since Python 2.7 will not be
 maintained past January 1, 2020.
 
 As far as there are no low-level system calls (at least now) the module should
@@ -84,11 +87,41 @@ module in command line mode.
 
 #### Production
 
+##### System packages
+
 While there is no DEB and RPM packages build yet, the only one way to make the
 project working locally is to install it as Python module or use `virtualenv` to
 create virtual Python environment.
 
 Please see [Development](#development) paragraph for details.
+
+##### Python module
+
+In case you need to install the application as a Python module (for example, you
+want to use its API in your new awesome module or application), please follow
+the next common Python modules manual installation steps:
+
+1. Obtain the package sources and change working directory to the root of project.
+For example, clone the project using Git:
+
+```bash
+git clone https://git-y.yourserveradmin.com/pa/toggl2pl.git
+cd toggl2pl
+```
+
+2. Depending on your use case you may want to install the package into virtual
+Python environment instead of modify the system root file system. Please, refer
+to the [Development](#development) section for details about `virtualenv` usage.
+
+3. The last step is to install the package data into your environment:
+
+```bash
+python setup.py install
+```
+
+The command above will build and install package data into correct directories,
+so you will be able to access module API from your code and execute scripts
+distributed with this module without any `PATH` modifications.
 
 ### Command line interface
 
@@ -143,7 +176,7 @@ the CLI help output._
 
 ##### Custom date
 
-In case you need to export Toggle information from the past days, please use the
+In case you need to export Toggl information from the past days, please use the
 `--date` flag with exact date in `YYYY-MM-DD` format:
 
 ```bash
