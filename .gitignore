@@ -1,4 +1,7 @@
 .idea
+build
+dist
+toggl2pl.spec
 venv
 *.pyc
 *.pyo

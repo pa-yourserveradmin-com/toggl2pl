@@ -21,6 +21,8 @@ into [PL][pl] (Project Laboratory).
   - [Features](#features)
 - [Roadmap](#roadmap)
 - [Internals](#internals)
+  - [Supported APIs](#supported-apis)
+  - [Build application](#build-application)
 
 ## Requirements
 
@@ -211,12 +213,11 @@ on external factors and ideas:
 * [x] create a minimal set of logic to implement the core functional.
 * [x] create command line interface to use already implemented logic.
 * [x] tune output format and information to make it useful and easy to understand.
-* [ ] document existing code, CLI flags and configuration options with Sphinx.
-* [ ] compile Python code to statically linked executable files (using [cx_Freeze][cx_Freeze]
-  or [PyInstaller][PyInstaller]) to avoid dependency on Python itself and its
-  modules.
+* [x] compile Python code to statically linked executable file to avoid dependency
+on Python itself and its modules.
 * [ ] automate build of DEB and RPM packages with compiled executable files to
 start distributing the module in acceptable way.
+* [ ] document existing code, CLI flags and configuration options with Sphinx.
 * [ ] freeze existing functional and tweak code to resolve regressions and improve
 quality.
 * [ ] unit tests and coverage reports for existing minimal set of features.
@@ -224,6 +225,8 @@ quality.
 The list above is incomplete, because there are too many ideas and features which
 can be implemented, for example:
 
+- extend the list of [supported APIs](#supported-apis) by [Clockify][clockify]
+API in order to provide an alternative to [Toggl][toggl].
 - use, for example, Flask, move logic to centralized server and communicate with
 it by using HTTP API with a minimal set of required options. But, at the same time
 keep ability to use the module in server-less mode and directly communicate with
@@ -233,15 +236,49 @@ to provide flexible reports and analytic mechanisms (for each user and for teams
 
 ## Internals
 
+### Supported APIs
+
 The module is designed to work with time trackers over HTTP API, so in case of
 any questions, please refer to their official documentation in the first place:
 
-- [Project Laboratory API Documentation][pl_api_docs]
-- [Toggl API Documentation][toggl_api_docs]
+* [x] [Project Laboratory API Documentation][pl_api_docs]
+* [x] [Toggl API Documentation][toggl_api_docs]
+* [ ] [Clockify API Documentation][clockify_api_docs]
 
-[cx_Freeze]: https://anthony-tuininga.github.io/cx_Freeze/
+_Note: work on Clockify API support is planned, but not started yet._
+
+### Build application
+
+__Please, make sure you completed with steps described in the [Development](#development)
+section before continue with application build, since development environment is
+required option on this stage.__
+
+In order to make the application easy distributable and simple to install, the
+project code needs to be compiled into the single executable file with all its
+dependencies.
+
+While there is a number of tools which may create such kind of distributions,
+this project uses [PyInstaller][pyinstaller] which does exactly what is needed
+almost out of the box:
+
+```bash
+pyinstaller --onefile scripts/toggl2pl
+```
+
+The command above will collect all package dependencies and files into the single
+executable file which can be distributed to end users without additional actions
+on their side (system / Python packages installation).
+
+**Important: please, always keep in mind that resulting executable will depends
+on core system libraries (for example, `glibc` in Linux) and their versions, so
+in case you need to compile application code for multiple distributions you must
+do this for each distribution (preferable way) or compile code just once using
+distribution which ships with the oldest libraries versions (lazy way).**
+
+[clockify]: https://clockify.me/
+[clockify_api_docs]: https://clockify.github.io/clockify_api_docs/
 [PyInstaller]: https://www.pyinstaller.org/
 [pl]: https://pl.itcraft.co/
-[pl_api_docs]: https://pl.itcraft.co/api/docs
-[toggl]: https://toggl.com
-[toggl_api_docs]: https://github.com/toggl/toggl_api_docs
+[pl_api_docs]: https://pl.itcraft.co/api/docs/
+[toggl]: https://toggl.com/
+[toggl_api_docs]: https://github.com/toggl/toggl_api_docs/
