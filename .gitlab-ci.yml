@@ -7,36 +7,22 @@ stages:
   - build
   - test
 
-build:fc29:
+build:linux:
   artifacts:
     paths:
-      - ${PACKAGE_NAME}-${PACKAGE_VERSION}-1${DIST}.x86_64.rpm
+      - ${PACKAGE_NAME}-${PACKAGE_VERSION}-linux
     expire_in: 1 hrs
   before_script:
-    - yum --assumeyes install gcc python-virtualenv python3-virtualenv rpm-build
-    - virtualenv --python=python3 /opt/${PACKAGE_NAME}
-    - echo '%_topdir %(pwd)' > ~/.rpmmacros
-  image: fedora:29
+    - apt update
+    - apt install --assume-yes binutils
+    - pip install virtualenv
+    - virtualenv --python=python3 venv
+  image: python:3.7.2-slim-stretch
   script:
-    - /opt/${PACKAGE_NAME}/bin/pip install -r requirements.txt
-    - /opt/${PACKAGE_NAME}/bin/python setup.py sdist --dist-dir SOURCES
-    - rpmbuild -ba -D "dist ${DIST}" SPECS/${PACKAGE_NAME}.spec
-    - mv -fv RPMS/x86_64/${PACKAGE_NAME}-${PACKAGE_VERSION}-1${DIST}.x86_64.rpm .
+    - venv/bin/pip install --upgrade --requirement requirements.txt
+    - venv/bin/pyinstaller --distpath . --name ${PACKAGE_NAME}-${PACKAGE_VERSION}-linux --onefile scripts/${PACKAGE_NAME}
   stage: build
   tags:
     - docker
   variables:
-    DIST: .fc29
-
-test:fc29:
-  dependencies:
-    - build:fc29
-  image: fedora:29
-  script:
-    - yum --assumeyes install ${PACKAGE_NAME}-${PACKAGE_VERSION}-1${DIST}.x86_64.rpm
-    - ${PACKAGE_NAME} --help
-  stage: test
-  tags:
-    - docker
-  variables:
-    DIST: .fc29
+    DEBIAN_FRONTEND: noninteractive
