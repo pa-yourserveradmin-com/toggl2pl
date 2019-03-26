@@ -26,3 +26,51 @@ build:linux:
     - docker
   variables:
     DEBIAN_FRONTEND: noninteractive
+
+test:rpm:el7:
+  before_script:
+    - install -v -m 0755 -o root -g root ${PACKAGE_NAME}-${PACKAGE_VERSION}-linux /usr/local/bin/${PACKAGE_NAME}
+  dependencies:
+    - build:linux
+  image: centos:7.6.1810
+  script:
+    - ${PACKAGE_NAME} --help
+  stage: test
+  tags:
+    - docker
+
+test:rpm:fc29:
+  before_script:
+    - install -v -m 0755 -o root -g root ${PACKAGE_NAME}-${PACKAGE_VERSION}-linux /usr/local/bin/${PACKAGE_NAME}
+  dependencies:
+    - build:linux
+  image: fedora:29
+  script:
+    - ${PACKAGE_NAME} --help
+  stage: test
+  tags:
+    - docker
+
+test:deb:jessie:
+  before_script:
+    - install -v -m 0755 -o root -g root ${PACKAGE_NAME}-${PACKAGE_VERSION}-linux /usr/local/bin/${PACKAGE_NAME}
+  dependencies:
+    - build:linux
+  image: debian:jessie-slim
+  script:
+    - ${PACKAGE_NAME} --help
+  stage: test
+  tags:
+    - docker
+
+test:deb:stretch:
+  before_script:
+    - install -v -m 0755 -o root -g root ${PACKAGE_NAME}-${PACKAGE_VERSION}-linux /usr/local/bin/${PACKAGE_NAME}
+  dependencies:
+    - build:linux
+  image: debian:stretch-slim
+  script:
+    - ${PACKAGE_NAME} --help
+  stage: test
+  tags:
+    - docker
