@@ -57,7 +57,7 @@ test:rpm:fc29:
 
 test:deb:jessie:
   before_script:
-    - apt update
+    - 'apt update ||:'  # Ignore errors on this step because Debian Jessie APT cache update results are unpredictable
     - apt install --assume-yes unzip
     - unzip ${PACKAGE_NAME}-${PACKAGE_VERSION}-linux-${PACHAGE_ARCH}.zip -d /usr/local/bin
   dependencies:
