@@ -7,12 +7,13 @@ variables:
 stages:
   - build
   - test
+  - sign
 
 build:linux:
   artifacts:
     paths:
       - ${PACKAGE_NAME}-${PACKAGE_VERSION}-linux-${PACHAGE_ARCH}.zip
-    expire_in: 1 hrs
+    expire_in: 15 mins
   before_script:
     - apt update
     - apt install --assume-yes binutils zip
@@ -80,5 +81,26 @@ test:deb:stretch:
   script:
     - ${PACKAGE_NAME} --help
   stage: test
+  tags:
+    - docker
+
+sign:zip:
+  artifacts:
+    paths:
+      - ${PACKAGE_NAME}-${PACKAGE_VERSION}-linux-${PACHAGE_ARCH}.zip
+      - ${PACKAGE_NAME}-${PACKAGE_VERSION}-linux-${PACHAGE_ARCH}.zip.sig
+    expire_in: 1 hrs
+  before_script:
+    - gpg2 --import <(echo "${PGP_PRIVATE_KEY_BLOCK}")
+    - gpg2 --list-keys
+  dependencies:
+    - build:linux
+  image: fedora:29
+  only:
+    - master
+  script:
+    - gpg2 --detach-sign --default-key ${PGP_FINGERPRINT} ${PACKAGE_NAME}-${PACKAGE_VERSION}-linux-${PACHAGE_ARCH}.zip
+    - gpg2 --verify ${PACKAGE_NAME}-${PACKAGE_VERSION}-linux-${PACHAGE_ARCH}.zip.sig ${PACKAGE_NAME}-${PACKAGE_VERSION}-linux-${PACHAGE_ARCH}.zip
+  stage: sign
   tags:
     - docker
