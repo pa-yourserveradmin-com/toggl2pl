@@ -1,4 +1,5 @@
 from datetime import datetime
+from pathlib import Path
 from tabulate import tabulate
 from tqdm import tqdm
 from time import sleep
@@ -22,7 +23,7 @@ def main():
         '--config',
         help='Path to configuration file (default: ~/.toggl2pl/config.yml)',
         type=str,
-        default='{}/.toggl2pl/config.yml'.format(os.getenv('HOME'))
+        default='{home}/.toggl2pl/config.yml'.format(home=str(Path.home()))
     )
     parser.add_argument(
         '-d',
@@ -39,8 +40,11 @@ def main():
     )
     known_args, unknown_args = parser.parse_known_args()
 
-    with open(known_args.config, 'r') as fp:
-        config = yaml.safe_load(fp)
+    try:
+        with open(known_args.config, 'r') as fp:
+            config = yaml.safe_load(fp)
+    except FileNotFoundError as nf:
+        sys.exit(nf)
 
     pl = PL(
         app_key=APP_KEY,
