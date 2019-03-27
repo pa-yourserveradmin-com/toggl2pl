@@ -215,8 +215,10 @@ on external factors and ideas:
 * [x] tune output format and information to make it useful and easy to understand.
 * [x] compile Python code to statically linked executable file to avoid dependency
 on Python itself and its modules.
-* [ ] automate build of DEB and RPM packages with compiled executable files to
-start distributing the module in acceptable way.
+* [x] automate build of Linux executable file to start distributing the tool in
+acceptable way.
+* [ ] automate build of Windows executable file to provide an ability to use the
+tool on this platform.
 * [ ] document existing code, CLI flags and configuration options with Sphinx.
 * [ ] freeze existing functional and tweak code to resolve regressions and improve
 quality.
@@ -268,12 +270,6 @@ pyinstaller --onefile scripts/toggl2pl
 The command above will collect all package dependencies and files into the single
 executable file which can be distributed to end users without additional actions
 on their side (system / Python packages installation).
-
-**Important: please, always keep in mind that resulting executable will depends
-on core system libraries (for example, `glibc` in Linux) and their versions, so
-in case you need to compile application code for multiple distributions you must
-do this for each distribution (preferable way) or compile code just once using
-distribution which ships with the oldest libraries versions (lazy way).**
 
 [clockify]: https://clockify.me/
 [clockify_api_docs]: https://clockify.github.io/clockify_api_docs/
