@@ -7,12 +7,16 @@ from toggl2pl import PL
 from toggl2pl import TogglReportsClient
 import argparse
 import os
+import platform
 import sys
 import yaml
 
 
 # The required PL application key used to gather application usage statistic
 APP_KEY = 'fba04c0786f881822dd9f7aa0d2530c6:o@$s^^JG8a4w9lgJcPH*'
+CONFIG_PATH = '/.toggl2pl/config.yml'
+if platform.system() == 'Windows':
+    CONFIG_PATH = CONFIG_PATH.replace('/', '\\')
 ROUND_BASE = os.getenv('ROUND_BASE', 5)
 
 
@@ -21,9 +25,9 @@ def main():
     parser.add_argument(
         '-c',
         '--config',
-        help='Path to configuration file (default: ~/.toggl2pl/config.yml)',
+        help='Path to configuration file (default: ~{config})'.format(config=CONFIG_PATH),
         type=str,
-        default='{home}/.toggl2pl/config.yml'.format(home=str(Path.home()))
+        default='{home}{config}'.format(home=str(Path.home()), config=CONFIG_PATH)
     )
     parser.add_argument(
         '-d',
