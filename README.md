@@ -1,4 +1,4 @@
-# python-toggl2pl
+# toggl2pl
 
 Python module and tool to simplify import of time entries from [Toggl][toggl]
 into [PL][pl] (Project Laboratory).
@@ -287,6 +287,6 @@ on their side (system / Python packages installation).
 [clockify_api_docs]: https://clockify.github.io/clockify_api_docs/
 [PyInstaller]: https://www.pyinstaller.org/
 [pl]: https://pl.itcraft.co/
-[pl_api_docs]: https://pl.itcraft.co/api/docs/
+[pl_api_docs]: https://pl.itcraft.co/api/docs
 [toggl]: https://toggl.com/
 [toggl_api_docs]: https://github.com/toggl/toggl_api_docs/

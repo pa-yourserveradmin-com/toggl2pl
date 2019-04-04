@@ -2,7 +2,6 @@ Welcome to python-toggl2pl's documentation!
 ===========================================
 
 .. toctree::
-   :hidden:
    :maxdepth: 2
 
    README
