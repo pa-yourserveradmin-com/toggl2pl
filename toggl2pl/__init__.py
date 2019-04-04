@@ -127,9 +127,9 @@ class PL(object):
                 json=kwargs,
                 verify=self.verify
             )
+            logging.debug(msg=kwargs)
             if response.status_code != 200:
-                logging.error(msg=response.content)
-                sys.exit(response.status_code)
+                sys.exit('{status_code}: {content}'.format(status_code=response.status_code, content=response.content))
             return response.json()
         except Exception as ex:
             sys.exit(ex)
@@ -253,9 +253,9 @@ class TogglAPIClient(object):
                 auth=self.auth,
                 params=kwargs
             )
+            logging.debug(msg=kwargs)
             if response.status_code != 200:
-                logging.error(msg=response.content)
-                sys.exit(response.status_code)
+                sys.exit('{status_code}: {content}'.format(status_code=response.status_code, content=response.content))
             return response.json()
         except Exception as ex:
             sys.exit(ex)
@@ -292,9 +292,9 @@ class TogglAPIClient(object):
                 auth=self.auth,
                 json=kwargs
             )
+            logging.debug(msg=kwargs)
             if response.status_code != 200:
-                logging.error(msg=response.content)
-                sys.exit(response.status_code)
+                sys.exit('{status_code}: {content}'.format(status_code=response.status_code, content=response.content))
             return response.json()
         except Exception as ex:
             sys.exit(ex)

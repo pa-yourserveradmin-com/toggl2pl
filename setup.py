@@ -1,8 +1,12 @@
 from setuptools import setup
+import yaml
+
+with open('.gitlab-ci.yml', 'r') as fp:
+    version = yaml.safe_load(fp)['variables']['PACKAGE_VERSION']
 
 setup(
     name='toggl2pl',
-    version='1.0.0',
+    version=version,
     packages=[
         'toggl2pl'
     ],
