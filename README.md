@@ -78,6 +78,7 @@ able to try using the module. In order to check environment, just try to execute
 the next CLI command:
 
 ```bash
+cp -av scripts/toggl2pl toggl2pl.py
 ./toggl2pl.py --help
 ```
 
@@ -91,11 +92,22 @@ module in command line mode.
 
 ##### System packages
 
-While there is no DEB and RPM packages build yet, the only one way to make the
-project working locally is to install it as Python module or use `virtualenv` to
-create virtual Python environment.
+The application is distributing for Linux and Windows systems as single statically
+compiled executable files packaged in ZIP archives and signed with GPG key.
 
-Please see [Development](#development) paragraph for details.
+Example installation steps to execute on Linux:
+
+```bash
+unzip toggl2pl-1.0.0-linux-amd64.zip
+install -v -D toggl2pl ~/.local/bin/toggl2pl
+rm -fv toggl2pl-1.0.0-linux-amd64.zip toggl2pl
+```
+
+Verify application work with your Linux distribution:
+
+```bash
+toggl2pl --help
+```
 
 ##### Python module
 
@@ -151,7 +163,7 @@ In order to post hours for the current day AS IS just call the script without
 any arguments:
 
 ```bash
-./toggl2pl.py
+toggl2pl
 ```
 
 In the output you will see a table with list of projects, tasks and time (real
@@ -167,7 +179,7 @@ In order to post rounded number of minutes - just append `--round` flag to the
 script:
 
 ```bash
-./toggl2pl.py --round
+toggl2pl --round
 ```
 
 The output will be the same, but after confirmation rounded number of time will
@@ -182,7 +194,7 @@ In case you need to export Toggl information from the past days, please use the
 `--date` flag with exact date in `YYYY-MM-DD` format:
 
 ```bash
-./toggl2pl.py --date 2016-02-29
+toggl2pl.py --date 2016-02-29
 ```
 
 This will export Toggl time entries dated `2016-02-29` to PL with the same day
