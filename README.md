@@ -136,11 +136,11 @@ module in command line mode.
 #### Configuration
 
 By default CLI uses configuration file stored as `~/.toggl2pl/config.yml`. Please
-execute the next commands to install [config.yml.example](data/config.yml.example)
+execute the next commands to install [config.yml.example](_static/config.yml.example)
 as the default configuration file:
 
 ```bash
-install -v -D data/config.yml.example ~/.toggl2pl/config.yml
+install -v -D _static/config.yml.example ~/.toggl2pl/config.yml
 ```
 
 Please open the newly created configuration file with your preferable text editor,
