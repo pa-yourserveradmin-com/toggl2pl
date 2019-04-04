@@ -6,10 +6,10 @@ into [PL][pl] (Project Laboratory).
 - [Requirements](#requirements)
 - [Usage](#usage)
   - [Installation](#installation)
-    - [Development](#development)
     - [Production](#production)
       - [System packages](#system-packages)
       - [Python module](#python-module)
+    - [Development](#development)
   - [Command line interface](#command-line-interface)
     - [Configuration](#configuration)
     - [Examples](#examples)
@@ -28,65 +28,15 @@ into [PL][pl] (Project Laboratory).
 
 The module is written in pure Python and its work verified with Python `3.x`.
 
-Support for Python `2.7` (and older) is not planned since Python 2.7 will not be
-maintained past January 1, 2020.
-
 As far as there are no low-level system calls (at least now) the module should
 be platform independent, i.e. work on any platform where Python is available.
+
+_Python `2.7` (and older) support is not planned since Python 2.7 will not be
+maintained past January 1, 2020._
 
 ## Usage
 
 ### Installation
-
-#### Development
-
-The Python `virtualenv` module is recommended to start using the package in
-development mode, i.e. without module installation into the system. Please, see
-`virtualenv` package installation instructions for some common used operating
-systems below.
-
-CentOS 7:
-
-```bash
-yum --assumeyes install python-virtualenv
-```
-
-Fedora 29:
-
-```bash
-dnf --assumeyes install python-virtualenv python3-virtualenv
-```
-
-Ubuntu 18:
-
-```bash
-apt --assume-yes install python-virtualenv python3-virtualenv
-```
-
-Once the `virtualenv` package is installed, just create a new Python virtual
-environment anywhere you want. The example below assumes virtual environment is
-deployed into the root of the cloned project repository:
-
-```bash
-virtualenv venv
-source venv/bin/activate
-pip install --requirement requirements.txt
-```
-
-In case of no issues with Python virtual environment setup, now you should be
-able to try using the module. In order to check environment, just try to execute
-the next CLI command:
-
-```bash
-cp -av scripts/toggl2pl toggl2pl.py
-./toggl2pl.py --help
-```
-
-In the output you will see usage instructions and some CLI arguments descriptions.
-
-In order to interact with time trackers some additional configuration is needed,
-please proceed with [Configuration](#configuration) paragraph to start using the
-module in command line mode.
 
 #### Production
 
@@ -136,6 +86,50 @@ python setup.py install
 The command above will build and install package data into correct directories,
 so you will be able to access module API from your code and execute scripts
 distributed with this module without any `PATH` modifications.
+
+#### Development
+
+The Python `virtualenv` module is recommended to start using the package in
+development mode, i.e. without module installation into the system. Please, see
+`virtualenv` package installation instructions for some common used operating
+systems below.
+
+Fedora 29:
+
+```bash
+dnf --assumeyes install python-virtualenv python3-virtualenv
+```
+
+Ubuntu 18:
+
+```bash
+apt --assume-yes install python-virtualenv python3-virtualenv
+```
+
+Once the `virtualenv` package is installed, just create a new Python virtual
+environment anywhere you want. The example below assumes virtual environment is
+deployed into the root of the cloned project repository:
+
+```bash
+virtualenv venv
+source venv/bin/activate
+pip install --requirement requirements.txt
+```
+
+In case of no issues with Python virtual environment setup, now you should be
+able to try using the module. In order to check environment, just try to execute
+the next CLI command:
+
+```bash
+cp -av scripts/toggl2pl toggl2pl.py
+./toggl2pl.py --help
+```
+
+In the output you will see usage instructions and some CLI arguments descriptions.
+
+In order to interact with time trackers some additional configuration is needed,
+please proceed with [Configuration](#configuration) paragraph to start using the
+module in command line mode.
 
 ### Command line interface
 
@@ -194,7 +188,7 @@ In case you need to export Toggl information from the past days, please use the
 `--date` flag with exact date in `YYYY-MM-DD` format:
 
 ```bash
-toggl2pl.py --date 2016-02-29
+toggl2pl --date 2016-02-29
 ```
 
 This will export Toggl time entries dated `2016-02-29` to PL with the same day
