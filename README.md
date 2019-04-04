@@ -217,7 +217,7 @@ on external factors and ideas:
 on Python itself and its modules.
 * [x] automate build of Linux executable file to start distributing the tool in
 acceptable way.
-* [ ] automate build of Windows executable file to provide an ability to use the
+* [x] automate build of Windows executable file to provide an ability to use the
 tool on this platform.
 * [ ] document existing code, CLI flags and configuration options with Sphinx.
 * [ ] freeze existing functional and tweak code to resolve regressions and improve
