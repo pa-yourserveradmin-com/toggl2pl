@@ -4,6 +4,9 @@
 # list see the documentation:
 # http://www.sphinx-doc.org/en/master/config
 
+import datetime
+import yaml
+
 # -- Path setup --------------------------------------------------------------
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -18,11 +21,16 @@ sys.path.insert(0, os.path.abspath('.'))
 # -- Project information -----------------------------------------------------
 
 project = 'python-toggl2pl'
-copyright = '2019, Andrew Poltavchenko'
+copyright = '{year}, Andrew Poltavchenko'.format(year=datetime.datetime.now().year)
 author = 'Andrew Poltavchenko'
 
+with open('.gitlab-ci.yml', 'r') as fp:
+    version = yaml.safe_load(fp)['variables']['PACKAGE_VERSION'].split('.')
+
 # The full version, including alpha/beta/rc tags
-release = '1.0.1'
+release = '.'.join(version)
+# The short X.Y version
+version = '{maj}.{min}'.format(maj=version[0], min=version[1])
 
 
 # -- General configuration ---------------------------------------------------
@@ -56,3 +64,5 @@ html_theme = 'alabaster'
 html_static_path = ['_static']
 
 autoclass_content = 'both'
+
+pygments_style = 'sphinx'
