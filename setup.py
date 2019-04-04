@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='toggl2pl',
-    version='1.0.0',
+    version='1.0.1',
     packages=[
         'toggl2pl'
     ],
