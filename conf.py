@@ -39,6 +39,7 @@ version = '{maj}.{min}'.format(maj=version[0], min=version[1])
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'recommonmark',
     'sphinx.ext.autodoc',
     'sphinxarg.ext',
 ]
@@ -46,13 +47,10 @@ extensions = [
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
-from recommonmark.parser import CommonMarkParser
-
-source_parsers = {
-    '.md': CommonMarkParser,
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.md': 'markdown',
 }
-
-source_suffix = ['.rst', '.md']
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -74,5 +72,6 @@ html_favicon = '_static/favicon.ico'
 html_static_path = ['_static']
 
 autoclass_content = 'both'
+autodoc_default_flags = ['show-inheritance']
 
 pygments_style = 'sphinx'
