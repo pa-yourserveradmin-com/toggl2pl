@@ -1,13 +1,12 @@
-Welcome to python-toggl2pl's documentation!
-===========================================
+Welcome to toggl2pl's documentation!
+====================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
 
    README
-   PL
-   Toggl
-   Misc
+   API
+
 
 Indices and tables
 ==================

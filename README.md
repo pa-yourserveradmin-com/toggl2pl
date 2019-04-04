@@ -31,7 +31,7 @@ The module is written in pure Python and its work verified with Python `3.x`.
 As far as there are no low-level system calls (at least now) the module should
 be platform independent, i.e. work on any platform where Python is available.
 
-_Python `2.7` (and older) support is not planned since Python 2.7 will not be
+_Python `2.7` (and older) support is not planned since Python `2.7` will not be
 maintained past January 1, 2020._
 
 ## Usage

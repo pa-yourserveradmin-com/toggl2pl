@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.abspath('.'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'python-toggl2pl'
+project = 'toggl2pl'
 copyright = '{year}, Andrew Poltavchenko'.format(year=datetime.datetime.now().year)
 author = 'Andrew Poltavchenko'
 
