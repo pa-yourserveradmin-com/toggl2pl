@@ -21,6 +21,12 @@ ROUND_BASE = os.getenv('ROUND_BASE', 5)
 
 
 def parse_arguments():
+    """
+    Function to handle argument parser configuration (argument definitions, default values and so on).
+
+    :return: Argument parser object with set of configured arguments.
+    :rtype: argparse.ArgumentParser()
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '-c',
@@ -46,6 +52,10 @@ def parse_arguments():
 
 
 def main():
+    """
+    Main entry point used by toggl2pl tool to process command line arguments, parse configuration file and use the
+    module API to interact with time trackers.
+    """
     known_args, unknown_args = parse_arguments().parse_known_args()
     try:
         with open(known_args.config, 'r') as fp:
