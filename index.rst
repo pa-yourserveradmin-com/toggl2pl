@@ -1,14 +1,13 @@
 Welcome to python-toggl2pl's documentation!
 ===========================================
 
-.. automodule:: toggl2pl
-   :members:
-
 .. toctree::
+   :hidden:
    :maxdepth: 2
-   :caption: Contents:
 
-
+   PL
+   Toggl
+   Misc
 
 Indices and tables
 ==================
