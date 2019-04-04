@@ -5,6 +5,7 @@ Welcome to python-toggl2pl's documentation!
    :hidden:
    :maxdepth: 2
 
+   README
    PL
    Toggl
    Misc
