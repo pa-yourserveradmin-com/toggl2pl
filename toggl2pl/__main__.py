@@ -20,7 +20,7 @@ if platform.system() == 'Windows':
 ROUND_BASE = os.getenv('ROUND_BASE', 5)
 
 
-def main():
+def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '-c',
@@ -42,8 +42,11 @@ def main():
         help='Round the number of minutes spent on each project to +/- {} minutes.'.format(ROUND_BASE),
         action='store_true'
     )
-    known_args, unknown_args = parser.parse_known_args()
+    return parser
 
+
+def main():
+    known_args, unknown_args = parse_arguments().parse_known_args()
     try:
         with open(known_args.config, 'r') as fp:
             config = yaml.safe_load(fp)
