@@ -5,6 +5,7 @@ Welcome to toggl2pl's documentation!
    :maxdepth: 4
 
    README
+   CLI
    API
 
 
