@@ -140,7 +140,7 @@ execute the next commands to install [config.yml.example](_static/config.yml.exa
 as the default configuration file:
 
 ```bash
-install -v -D _static/config.yml.example ~/.toggl2pl/config.yml
+install -v -D docs/_static/config.yml.example ~/.toggl2pl/config.yml
 ```
 
 Please open the newly created configuration file with your preferable text editor,
@@ -225,7 +225,7 @@ on Python itself and its modules.
 acceptable way.
 * [x] automate build of Windows executable file to provide an ability to use the
 tool on this platform.
-* [ ] document existing code, CLI flags and configuration options with Sphinx.
+* [x] document existing code, CLI flags and configuration options with Sphinx.
 * [ ] freeze existing functional and tweak code to resolve regressions and improve
 quality.
 * [ ] unit tests and coverage reports for existing minimal set of features.
