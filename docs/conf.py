@@ -15,7 +15,7 @@ import yaml
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('..'))
 
 
 # -- Project information -----------------------------------------------------
@@ -24,7 +24,7 @@ project = 'toggl2pl'
 copyright = '{year}, Andrew Poltavchenko'.format(year=datetime.datetime.now().year)
 author = 'Andrew Poltavchenko'
 
-with open('.gitlab-ci.yml', 'r') as fp:
+with open('../.gitlab-ci.yml', 'r') as fp:
     version = yaml.safe_load(fp)['variables']['PACKAGE_VERSION'].split('.')
 
 # The full version, including alpha/beta/rc tags
