@@ -519,7 +519,7 @@ def rounded(minutes, base=5):
     :type minutes: int
     :param base: The base number of minutes to use in rounding.
     :type base: int
-    :return: Number of minutes rounded based on amount og real amount of minutes.
+    :return: Number of minutes rounded based on amount of real amount of minutes.
     :rtype: int
     """
     div, mod = divmod(minutes, base)

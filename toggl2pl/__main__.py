@@ -20,7 +20,13 @@ if platform.system() == 'Windows':
 ROUND_BASE = os.getenv('ROUND_BASE', 5)
 
 
-def main():
+def parse_arguments():
+    """
+    Function to handle argument parser configuration (argument definitions, default values and so on).
+
+    :return: Argument parser object with set of configured arguments.
+    :rtype: argparse.ArgumentParser()
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '-c',
@@ -42,8 +48,15 @@ def main():
         help='Round the number of minutes spent on each project to +/- {} minutes.'.format(ROUND_BASE),
         action='store_true'
     )
-    known_args, unknown_args = parser.parse_known_args()
+    return parser
 
+
+def main():
+    """
+    Main entry point used by toggl2pl tool to process command line arguments, parse configuration file and use the
+    module API to interact with time trackers.
+    """
+    known_args, unknown_args = parse_arguments().parse_known_args()
     try:
         with open(known_args.config, 'r') as fp:
             config = yaml.safe_load(fp)

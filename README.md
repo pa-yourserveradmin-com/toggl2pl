@@ -1,4 +1,4 @@
-# python-toggl2pl
+# toggl2pl
 
 Python module and tool to simplify import of time entries from [Toggl][toggl]
 into [PL][pl] (Project Laboratory).
@@ -6,10 +6,10 @@ into [PL][pl] (Project Laboratory).
 - [Requirements](#requirements)
 - [Usage](#usage)
   - [Installation](#installation)
-    - [Development](#development)
     - [Production](#production)
       - [System packages](#system-packages)
       - [Python module](#python-module)
+    - [Development](#development)
   - [Command line interface](#command-line-interface)
     - [Configuration](#configuration)
     - [Examples](#examples)
@@ -28,65 +28,15 @@ into [PL][pl] (Project Laboratory).
 
 The module is written in pure Python and its work verified with Python `3.x`.
 
-Support for Python `2.7` (and older) is not planned since Python 2.7 will not be
-maintained past January 1, 2020.
-
 As far as there are no low-level system calls (at least now) the module should
 be platform independent, i.e. work on any platform where Python is available.
+
+_Python `2.7` (and older) support is not planned since Python `2.7` will not be
+maintained past January 1, 2020._
 
 ## Usage
 
 ### Installation
-
-#### Development
-
-The Python `virtualenv` module is recommended to start using the package in
-development mode, i.e. without module installation into the system. Please, see
-`virtualenv` package installation instructions for some common used operating
-systems below.
-
-CentOS 7:
-
-```bash
-yum --assumeyes install python-virtualenv
-```
-
-Fedora 29:
-
-```bash
-dnf --assumeyes install python-virtualenv python3-virtualenv
-```
-
-Ubuntu 18:
-
-```bash
-apt --assume-yes install python-virtualenv python3-virtualenv
-```
-
-Once the `virtualenv` package is installed, just create a new Python virtual
-environment anywhere you want. The example below assumes virtual environment is
-deployed into the root of the cloned project repository:
-
-```bash
-virtualenv venv
-source venv/bin/activate
-pip install --requirement requirements.txt
-```
-
-In case of no issues with Python virtual environment setup, now you should be
-able to try using the module. In order to check environment, just try to execute
-the next CLI command:
-
-```bash
-cp -av scripts/toggl2pl toggl2pl.py
-./toggl2pl.py --help
-```
-
-In the output you will see usage instructions and some CLI arguments descriptions.
-
-In order to interact with time trackers some additional configuration is needed,
-please proceed with [Configuration](#configuration) paragraph to start using the
-module in command line mode.
 
 #### Production
 
@@ -137,16 +87,60 @@ The command above will build and install package data into correct directories,
 so you will be able to access module API from your code and execute scripts
 distributed with this module without any `PATH` modifications.
 
+#### Development
+
+The Python `virtualenv` module is recommended to start using the package in
+development mode, i.e. without module installation into the system. Please, see
+`virtualenv` package installation instructions for some common used operating
+systems below.
+
+Fedora 29:
+
+```bash
+dnf --assumeyes install python-virtualenv python3-virtualenv
+```
+
+Ubuntu 18:
+
+```bash
+apt --assume-yes install python-virtualenv python3-virtualenv
+```
+
+Once the `virtualenv` package is installed, just create a new Python virtual
+environment anywhere you want. The example below assumes virtual environment is
+deployed into the root of the cloned project repository:
+
+```bash
+virtualenv venv
+source venv/bin/activate
+pip install --requirement requirements.txt
+```
+
+In case of no issues with Python virtual environment setup, now you should be
+able to try using the module. In order to check environment, just try to execute
+the next CLI command:
+
+```bash
+cp -av scripts/toggl2pl toggl2pl.py
+./toggl2pl.py --help
+```
+
+In the output you will see usage instructions and some CLI arguments descriptions.
+
+In order to interact with time trackers some additional configuration is needed,
+please proceed with [Configuration](#configuration) paragraph to start using the
+module in command line mode.
+
 ### Command line interface
 
 #### Configuration
 
 By default CLI uses configuration file stored as `~/.toggl2pl/config.yml`. Please
-execute the next commands to install [config.yml.example](data/config.yml.example)
+execute the next commands to install [config.yml.example](_static/config.yml.example)
 as the default configuration file:
 
 ```bash
-install -v -D data/config.yml.example ~/.toggl2pl/config.yml
+install -v -D docs/_static/config.yml.example ~/.toggl2pl/config.yml
 ```
 
 Please open the newly created configuration file with your preferable text editor,
@@ -194,7 +188,7 @@ In case you need to export Toggl information from the past days, please use the
 `--date` flag with exact date in `YYYY-MM-DD` format:
 
 ```bash
-toggl2pl.py --date 2016-02-29
+toggl2pl --date 2016-02-29
 ```
 
 This will export Toggl time entries dated `2016-02-29` to PL with the same day
@@ -231,7 +225,7 @@ on Python itself and its modules.
 acceptable way.
 * [x] automate build of Windows executable file to provide an ability to use the
 tool on this platform.
-* [ ] document existing code, CLI flags and configuration options with Sphinx.
+* [x] document existing code, CLI flags and configuration options with Sphinx.
 * [ ] freeze existing functional and tweak code to resolve regressions and improve
 quality.
 * [ ] unit tests and coverage reports for existing minimal set of features.
@@ -287,6 +281,6 @@ on their side (system / Python packages installation).
 [clockify_api_docs]: https://clockify.github.io/clockify_api_docs/
 [PyInstaller]: https://www.pyinstaller.org/
 [pl]: https://pl.itcraft.co/
-[pl_api_docs]: https://pl.itcraft.co/api/docs/
+[pl_api_docs]: https://pl.itcraft.co/api/docs
 [toggl]: https://toggl.com/
 [toggl_api_docs]: https://github.com/toggl/toggl_api_docs/
