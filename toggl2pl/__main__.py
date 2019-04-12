@@ -76,10 +76,9 @@ def main():
     if isinstance(config['toggl']['workspace'], list) or not config['toggl']['workspace']:
         sys.exit(yaml.dump(config['toggl']['workspace']))
 
-    clients = toggl.clients(workspace=config['toggl']['workspace'])
+    clients = toggl.clients(wid=config['toggl']['workspace']['id'])
     projects = pl.projects(excluded_projects=config['pl']['excluded_projects'])
-
-    toggl_projects = toggl.projects(workspace=config['toggl']['workspace'])
+    toggl_projects = toggl.projects(wid=config['toggl']['workspace']['id'])
 
     for project in projects:
         if project not in clients:
@@ -104,7 +103,7 @@ def main():
                 toggl.create_project(cid=clients[project]['id'], name=item, wid=config['toggl']['workspace']['id'])
                 sleep(0.5)
 
-    posts = toggl.posts(workspace=config['toggl']['workspace'], since=known_args.date, until=known_args.date)
+    posts = toggl.posts(since=known_args.date, until=known_args.date, wid=config['toggl']['workspace']['id'])
 
     if not posts:
         sys.exit('There are no posts for {} yet. Please post something and try again.'.format(known_args.date))
