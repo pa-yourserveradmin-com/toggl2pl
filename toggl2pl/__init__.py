@@ -194,14 +194,14 @@ class TogglAPIClient(object):
             del clients[client['name']]['name']
         return clients
 
-    def create_client(self, name, workspace):
+    def create_client(self, name, wid):
         """
-        Create new client entity in corresponding Toggl workspace.
+        Create a new client in the particular Toggl workspace.
 
-        :param name: The name of new Toggl client to create.
+        :param name: The client name to create in Toggl workspace.
         :type name: str
-        :param workspace: Dictionary object which represents Toggl workspace.
-        :type workspace: dict
+        :param wid: The unique Toggl workspace ID to create client.
+        :type wid: int
         :return: Dictionary object with information about the newly created Toggl client.
         :rtype: dict
         """
@@ -209,7 +209,7 @@ class TogglAPIClient(object):
             endpoint='clients',
             client={
                 'name': name,
-                'wid': workspace['id']
+                'wid': wid
             }
         )['data']
 
@@ -221,7 +221,7 @@ class TogglAPIClient(object):
         :type cid: int
         :param name: The name to use for a new project.
         :type name: str
-        :param wid: The Toggl workspace ID to create project.
+        :param wid: The unique Toggl workspace ID to create project.
         :type wid: int
         :return: Dictionary object with information about the newly created Toggl project.
         :rtype: dict

@@ -83,7 +83,7 @@ def main():
 
     for project in projects:
         if project not in clients:
-            client = toggl.create_client(name=project, workspace=config['toggl']['workspace'])
+            client = toggl.create_client(name=project, wid=config['toggl']['workspace']['id'])
             clients.update(
                 {
                     client['name']: client
