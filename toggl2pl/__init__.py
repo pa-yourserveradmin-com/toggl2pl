@@ -32,21 +32,21 @@ class PL(object):
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         self.verify = verify
 
-    def add_post(self, project_id, task_id, description, date, taken):
+    def add_post(self, date, description, minutes, project_id, task_id):
         """
-        Create new post in PL database related to corresponding project and task with such required information as date,
-        description and time taken.
+        Create a new post in PL database with such required information as project, task, date, description and taken
+        amount of minutes.
 
+        :param date: The date when work was actually done in `YYYY-MM-DD` format (ISO 8601).
+        :type date: str
+        :param description: Relatively short description of the work done as a part of the parent task.
+        :type description: str
+        :param minutes: Total amount of minutes spent during work on the task entry.
+        :type minutes: int
         :param project_id: The project ID in PL database corresponding task belongs to.
         :type project_id: int
         :param task_id: The task ID in PL database to create new post.
         :type task_id: int
-        :param description: Relatively short description of the work done as a part of the parent task.
-        :type description: str
-        :param date: The date when work was actually done in `YYYY-MM-DD` format (ISO 8601).
-        :type date: str
-        :param taken: Total amount of minutes spent during work on the task entry.
-        :type taken: int
         :return: Dictionary object with PL API response content.
         :rtype: dict
         """
@@ -56,12 +56,12 @@ class PL(object):
             task_id=task_id,
             description=description,
             date=date,
-            taken=taken
+            taken=minutes
         )
 
     def list(self, endpoint, **kwargs):
         """
-        Wrapper for `PL.post()` method especially to execute requests to `list` PL endpoints.
+        Wrapper for :meth:`post` method especially to execute requests to PL `list` endpoints.
 
         :param endpoint: The PL entity (projects, tasks and so on) to list objects via API request.
         :type endpoint: str
@@ -69,7 +69,7 @@ class PL(object):
         :return: Dictionary object with list of requested PL entities.
         :rtype: dict
         """
-        return self.post(endpoint='{}/list'.format(endpoint), **kwargs)
+        return self.post(endpoint='{endpoint}/list'.format(endpoint=endpoint), **kwargs)
 
     def list_projects(self, include_inactive=False):
         """
@@ -83,16 +83,18 @@ class PL(object):
         """
         return self.list(endpoint='projects', include_inactive=include_inactive)
 
-    def list_tasks(self, project_id):
+    def list_tasks(self, project_id, per_page=-1):
         """
         List tasks corresponding to the particular project specified by its ID.
 
         :param project_id: The parent object ID to query list of tasks.
         :type project_id: int
+        :param per_page: The maximum number of projects to return in response.
+        :type per_page: int
         :return: Dictionary object with list of PL tasks related to requested project.
         :rtype: dict
         """
-        return self.list(endpoint='tasks', project_id=project_id, per_page=-1)
+        return self.list(endpoint='tasks', project_id=project_id, per_page=per_page)
 
     @staticmethod
     def normalize(items):
@@ -123,7 +125,7 @@ class PL(object):
         kwargs.update(self.data)
         try:
             response = self.session.post(
-                url='{}/{}'.format(self.base_url, endpoint),
+                url='{base_url}/{endpoint}'.format(base_url=self.base_url, endpoint=endpoint),
                 json=kwargs,
                 verify=self.verify
             )
@@ -136,8 +138,8 @@ class PL(object):
 
     def projects(self, excluded_projects=None):
         """
-        Wrapper for `list_projects` and `list_tasks` methods to exclude particular PL projects and combine projects data
-        with tasks data into single object with machine-readable structure.
+        Wrapper for :meth:`list_projects` and :meth:`list_tasks` methods to combine projects data with tasks data into
+        single object with machine-readable structure and optionally to exclude particular PL projects.
 
         :param excluded_projects: List of PL projects names to exclude from result.
         :type excluded_projects: list
@@ -164,7 +166,7 @@ class TogglAPIClient(object):
     base_url = 'https://toggl.com'
 
     toggl_api_version = 8
-    toggl_api_url = '{}/api/v{}'.format(base_url, toggl_api_version)
+    toggl_api_url = '{base_url}/api/v{toggl_api_version}'.format(base_url=base_url, toggl_api_version=toggl_api_version)
 
     def __init__(self, api_token, user_agent):
         """
@@ -179,29 +181,29 @@ class TogglAPIClient(object):
         self.session = requests.Session()
         self.user_agent = user_agent
 
-    def clients(self, workspace):
+    def clients(self, wid):
         """
-        Wrapper for `list_clients` method to convert list of Toggl clients into machine-readable format.
+        Wrapper for :meth:`list_clients` method to convert list of Toggl clients into machine-readable format.
 
-        :param workspace: Dictionary object which represents Toggl workspace.
-        :type workspace: dict
+        :param wid: The unique Toggl workspace ID to list clients.
+        :type wid: int
         :return: Dictionary object with detailed information about Toggl clients.
         :rtype: dict
         """
         clients = dict()
-        for client in self.list_clients(workspace=workspace):
+        for client in self.list_clients(wid=wid):
             clients[client['name']] = client
             del clients[client['name']]['name']
         return clients
 
-    def create_client(self, name, workspace):
+    def create_client(self, name, wid):
         """
-        Create new client entity in corresponding Toggl workspace.
+        Create a new client in the particular Toggl workspace.
 
-        :param name: The name of new Toggl client to create.
+        :param name: The client name to create in Toggl workspace.
         :type name: str
-        :param workspace: Dictionary object which represents Toggl workspace.
-        :type workspace: dict
+        :param wid: The unique Toggl workspace ID to create client.
+        :type wid: int
         :return: Dictionary object with information about the newly created Toggl client.
         :rtype: dict
         """
@@ -209,7 +211,7 @@ class TogglAPIClient(object):
             endpoint='clients',
             client={
                 'name': name,
-                'wid': workspace['id']
+                'wid': wid
             }
         )['data']
 
@@ -221,7 +223,7 @@ class TogglAPIClient(object):
         :type cid: int
         :param name: The name to use for a new project.
         :type name: str
-        :param wid: The Toggl workspace ID to create project.
+        :param wid: The unique Toggl workspace ID to create project.
         :type wid: int
         :return: Dictionary object with information about the newly created Toggl project.
         :rtype: dict
@@ -249,7 +251,7 @@ class TogglAPIClient(object):
         """
         try:
             response = self.session.get(
-                url='{}/{}'.format(url, endpoint),
+                url='{url}/{endpoint}'.format(url=url, endpoint=endpoint),
                 auth=self.auth,
                 params=kwargs
             )
@@ -260,16 +262,16 @@ class TogglAPIClient(object):
         except Exception as ex:
             sys.exit(ex)
 
-    def list_clients(self, workspace):
+    def list_clients(self, wid):
         """
         List clients corresponding to the particular Toggl workspace.
 
-        :param workspace: Dictionary object which represents Toggl workspace.
-        :type workspace: dict
+        :param wid: The unique Toggl workspace ID to list clients.
+        :type wid: int
         :return: List of dictionaries with clients descriptions.
         :rtype: list
         """
-        clients = self.get(endpoint='workspaces/{}/clients'.format(workspace['id']))
+        clients = self.get(endpoint='workspaces/{wid}/clients'.format(wid=wid))
         if clients:
             return clients
         return dict()
@@ -288,7 +290,7 @@ class TogglAPIClient(object):
         """
         try:
             response = self.session.post(
-                url='{}/{}'.format(url, endpoint),
+                url='{url}/{endpoint}'.format(url=url, endpoint=endpoint),
                 auth=self.auth,
                 json=kwargs
             )
@@ -299,7 +301,7 @@ class TogglAPIClient(object):
         except Exception as ex:
             sys.exit(ex)
 
-    def workspaces(self, name=str()):
+    def workspaces(self, name=None):
         """
         List workspaces available for specified API token with optional ability to query single workspace by its name.
 
@@ -321,7 +323,10 @@ class TogglReportsClient(TogglAPIClient):
     base_url = 'https://toggl.com'
 
     reports_api_version = 2
-    reports_api_url = '{}/reports/api/v{}'.format(base_url, reports_api_version)
+    reports_api_url = '{base_url}/reports/api/v{reports_api_version}'.format(
+        base_url=base_url,
+        reports_api_version=reports_api_version
+    )
 
     @staticmethod
     def fmt(description, width=80):
@@ -336,11 +341,10 @@ class TogglReportsClient(TogglAPIClient):
         :rtype: str
         """
         if not description.startswith('* '):
-            description = '* {}'.format(description)
+            description = '* {description}'.format(description=description)
         if not description.endswith('.'):
             description += '.'
-        description = '\n'.join(textwrap.wrap(description.strip(), width=width))
-        return description
+        return '\n'.join(textwrap.wrap(description.strip(), width=width))
 
     def get(self, endpoint, url=reports_api_url, **kwargs):
         """
@@ -356,12 +360,12 @@ class TogglReportsClient(TogglAPIClient):
         """
         return super().get(endpoint=endpoint, url=url, **kwargs)
 
-    def details(self, workspace, **kwargs):
+    def details(self, wid, **kwargs):
         """
         Fetch detailed information about tasks related to the specified Toggl workspace.
 
-        :param workspace: Toggl workspace to query information about tasks.
-        :type workspace: dict
+        :param wid: The Toggl workspace ID to query information about tasks.
+        :type wid: int
         :param kwargs: Parameters to query Toggl Reports API (please see official Toggl Reports API for details).
         :return: Dictionary object with detailed information about recorded tasks.
         :rtype: dict
@@ -369,7 +373,7 @@ class TogglReportsClient(TogglAPIClient):
         kwargs.update(
             {
                 'user_agent': self.user_agent,
-                'workspace_id': workspace['id']
+                'workspace_id': wid
             }
         )
         return self.get(
@@ -377,36 +381,36 @@ class TogglReportsClient(TogglAPIClient):
             **kwargs
         )
 
-    def list_clients(self, workspace):
+    def list_clients(self, wid):
         """
         List clients corresponding to the particular Toggl workspace.
 
-        :param workspace: Dictionary object which represents Toggl workspace.
-        :type workspace: dict
+        :param wid: The unique Toggl workspace ID to list clients.
+        :type wid: int
         :return: List of dictionaries with clients descriptions.
         :rtype: list
         """
-        clients = super().get(endpoint='workspaces/{}/clients'.format(workspace['id']))
+        clients = super().get(endpoint='workspaces/{wid}/clients'.format(wid=wid))
         if clients:
             return clients
         return dict()
 
-    def posts(self, workspace, since, until):
+    def posts(self, since, until, wid):
         """
-        High-level wrapper for `tasks` method to aggregate Toggl tasks by projects, format descriptions and round total
-        amount of minutes per project.
+        High-level wrapper for :meth:`tasks` method to aggregate Toggl tasks by projects, format descriptions and round
+        total amount of minutes per project.
 
-        :param workspace: Dictionary object which represents Toggl workspace.
-        :type workspace: dict
         :param since: The start date in ISO 8601 date (YYYY-MM-DD) format to query Toggl Reports API for tasks.
         :type since: str
         :param until: The end date in ISO 8601 date (YYYY-MM-DD) format to query Toggl Reports API for tasks.
         :type until: str
+        :param wid: The unique Toggl workspace ID to list tasks.
+        :type wid: int
         :return: Normalized list of Toggl tasks aggregated by projects.
         :rtype: list
         """
         posts = list()
-        for client, projects in sorted(self.tasks(workspace, since, until).items()):
+        for client, projects in sorted(self.tasks(since, until, wid).items()):
             for project, data in sorted(projects.items()):
                 durations = 0
                 descriptions = list()
@@ -427,20 +431,17 @@ class TogglReportsClient(TogglAPIClient):
                 )
         return posts
 
-    def projects(self, workspace):
+    def projects(self, wid):
         """
         Fetch list of the particular workspace projects and rewrite it into dictionary with machine-readable structure.
 
-        :param workspace: Dictionary object which represents Toggl workspace.
-        :type workspace: dict
+        :param wid: The unique Toggl workspace ID to list projects.
+        :type wid: int
         :return: Dictionary object with machine-readable information about projects in the specified workspace.
         :rtype: dict
         """
         projects = dict()
-        data = super().get(endpoint='workspaces/{}/projects'.format(workspace['id']))
-        if not data:
-            return projects
-        for item in super().get(endpoint='workspaces/{}/projects'.format(workspace['id'])):
+        for item in super().get(endpoint='workspaces/{wid}/projects'.format(wid=wid)):
             if item['cid'] not in projects:
                 projects.update(
                     {
@@ -453,21 +454,21 @@ class TogglReportsClient(TogglAPIClient):
             projects[item['cid']].append(item['name'])
         return projects
 
-    def tasks(self, workspace, since, until):
+    def tasks(self, since, until, wid):
         """
         Combine clients, projects and tasks information into single object with machine-readable format.
 
-        :param workspace: Dictionary object which represents Toggl workspace.
-        :type workspace: dict
         :param since: The start date in ISO 8601 date (YYYY-MM-DD) format to query Toggl Reports API for tasks.
         :type since: str
         :param until: The end date in ISO 8601 date (YYYY-MM-DD) format to query Toggl Reports API for tasks.
         :type until: str
+        :param wid: The unique Toggl workspace ID to list tasks.
+        :type wid: int
         :return: Dictionary object with machine-readable information about Toggl tasks during specified range of dates.
         :rtype: dict
         """
         tasks = dict()
-        for task in self.details(workspace=workspace, since=since, until=until)['data']:
+        for task in self.details(wid=wid, since=since, until=until)['data']:
             # GOTCHA: We want to have at least the next information about task: client, project and description. In case
             # some field is not filed the program must exit and ask to fill task details before continue with export.
             if None in (task['client'], task['project'], task['description']):

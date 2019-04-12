@@ -24,8 +24,8 @@ def parse_arguments():
     """
     Function to handle argument parser configuration (argument definitions, default values and so on).
 
-    :return: Argument parser object with set of configured arguments.
-    :rtype: argparse.ArgumentParser()
+    :return: :obj:`argparse.ArgumentParser` object with set of configured arguments.
+    :rtype: argparse.ArgumentParser
     """
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -76,14 +76,13 @@ def main():
     if isinstance(config['toggl']['workspace'], list) or not config['toggl']['workspace']:
         sys.exit(yaml.dump(config['toggl']['workspace']))
 
-    clients = toggl.clients(workspace=config['toggl']['workspace'])
+    clients = toggl.clients(wid=config['toggl']['workspace']['id'])
     projects = pl.projects(excluded_projects=config['pl']['excluded_projects'])
-
-    toggl_projects = toggl.projects(workspace=config['toggl']['workspace'])
+    toggl_projects = toggl.projects(wid=config['toggl']['workspace']['id'])
 
     for project in projects:
         if project not in clients:
-            client = toggl.create_client(name=project, workspace=config['toggl']['workspace'])
+            client = toggl.create_client(name=project, wid=config['toggl']['workspace']['id'])
             clients.update(
                 {
                     client['name']: client
@@ -104,7 +103,7 @@ def main():
                 toggl.create_project(cid=clients[project]['id'], name=item, wid=config['toggl']['workspace']['id'])
                 sleep(0.5)
 
-    posts = toggl.posts(workspace=config['toggl']['workspace'], since=known_args.date, until=known_args.date)
+    posts = toggl.posts(since=known_args.date, until=known_args.date, wid=config['toggl']['workspace']['id'])
 
     if not posts:
         sys.exit('There are no posts for {} yet. Please post something and try again.'.format(known_args.date))
@@ -120,9 +119,9 @@ def main():
     for post in tqdm(posts, desc='posts'):
         client, project, description, duration, rounded = post
         pl.add_post(
+            date=known_args.date,
+            description=description,
+            minutes=rounded if known_args.round else duration,
             project_id=projects[client]['id'],
             task_id=projects[client]['tasks'][project]['id'],
-            description=description,
-            date=known_args.date,
-            taken=rounded if known_args.round else duration
         )

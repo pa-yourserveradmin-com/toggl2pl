@@ -1,6 +1,6 @@
 # toggl2pl
 
-Python module and tool to simplify import of time entries from [Toggl][toggl]
+Python module and tool to simplify time entries export from [Toggl][toggl]
 into [PL][pl] (Project Laboratory).
 
 - [Requirements](#requirements)
