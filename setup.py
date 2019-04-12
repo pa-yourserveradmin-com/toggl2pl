@@ -4,6 +4,9 @@ import yaml
 with open('.gitlab-ci.yml', 'r') as fp:
     version = yaml.safe_load(fp)['variables']['PACKAGE_VERSION']
 
+with open('README.md', 'r') as fp:
+    long_description = fp.read()
+
 setup(
     name='toggl2pl',
     version=version,
@@ -22,8 +25,8 @@ setup(
     ],
     author='Andrew Poltavchenko',
     author_email='pa@yourserveradmin.com',
-    description='Python module and tool to simplify import of time entries from Toggl into Project Laboratory',
-    long_description='README',
+    description='Python module and tool to simplify time entries export from Toggl into Project Laboratory',
+    long_description=long_description,
     long_description_content_type='text/markdown',
     entry_points={
         'console_scripts':
