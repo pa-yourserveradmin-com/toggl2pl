@@ -24,8 +24,8 @@ def parse_arguments():
     """
     Function to handle argument parser configuration (argument definitions, default values and so on).
 
-    :return: Argument parser object with set of configured arguments.
-    :rtype: argparse.ArgumentParser()
+    :return: :obj:`argparse.ArgumentParser` object with set of configured arguments.
+    :rtype: argparse.ArgumentParser
     """
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -120,9 +120,9 @@ def main():
     for post in tqdm(posts, desc='posts'):
         client, project, description, duration, rounded = post
         pl.add_post(
+            date=known_args.date,
+            description=description,
+            minutes=rounded if known_args.round else duration,
             project_id=projects[client]['id'],
             task_id=projects[client]['tasks'][project]['id'],
-            description=description,
-            date=known_args.date,
-            taken=rounded if known_args.round else duration
         )

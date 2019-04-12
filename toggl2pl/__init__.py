@@ -32,21 +32,21 @@ class PL(object):
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         self.verify = verify
 
-    def add_post(self, project_id, task_id, description, date, taken):
+    def add_post(self, date, description, minutes, project_id, task_id):
         """
-        Create new post in PL database related to corresponding project and task with such required information as date,
-        description and time taken.
+        Create a new post in PL database with such required information as project, task, date, description and taken
+        amount of minutes.
 
+        :param date: The date when work was actually done in `YYYY-MM-DD` format (ISO 8601).
+        :type date: str
+        :param description: Relatively short description of the work done as a part of the parent task.
+        :type description: str
+        :param minutes: Total amount of minutes spent during work on the task entry.
+        :type minutes: int
         :param project_id: The project ID in PL database corresponding task belongs to.
         :type project_id: int
         :param task_id: The task ID in PL database to create new post.
         :type task_id: int
-        :param description: Relatively short description of the work done as a part of the parent task.
-        :type description: str
-        :param date: The date when work was actually done in `YYYY-MM-DD` format (ISO 8601).
-        :type date: str
-        :param taken: Total amount of minutes spent during work on the task entry.
-        :type taken: int
         :return: Dictionary object with PL API response content.
         :rtype: dict
         """
@@ -56,12 +56,12 @@ class PL(object):
             task_id=task_id,
             description=description,
             date=date,
-            taken=taken
+            taken=minutes
         )
 
     def list(self, endpoint, **kwargs):
         """
-        Wrapper for `PL.post()` method especially to execute requests to `list` PL endpoints.
+        Wrapper for :meth:`post` method especially to execute requests to PL `list` endpoints.
 
         :param endpoint: The PL entity (projects, tasks and so on) to list objects via API request.
         :type endpoint: str
@@ -136,8 +136,8 @@ class PL(object):
 
     def projects(self, excluded_projects=None):
         """
-        Wrapper for `list_projects` and `list_tasks` methods to exclude particular PL projects and combine projects data
-        with tasks data into single object with machine-readable structure.
+        Wrapper for :meth:`list_projects` and :meth:`list_tasks` methods to combine projects data with tasks data into
+        single object with machine-readable structure and optionally to exclude particular PL projects.
 
         :param excluded_projects: List of PL projects names to exclude from result.
         :type excluded_projects: list
@@ -181,7 +181,7 @@ class TogglAPIClient(object):
 
     def clients(self, workspace):
         """
-        Wrapper for `list_clients` method to convert list of Toggl clients into machine-readable format.
+        Wrapper for :meth:`list_clients` method to convert list of Toggl clients into machine-readable format.
 
         :param workspace: Dictionary object which represents Toggl workspace.
         :type workspace: dict
@@ -299,7 +299,7 @@ class TogglAPIClient(object):
         except Exception as ex:
             sys.exit(ex)
 
-    def workspaces(self, name=str()):
+    def workspaces(self, name=None):
         """
         List workspaces available for specified API token with optional ability to query single workspace by its name.
 
@@ -339,8 +339,7 @@ class TogglReportsClient(TogglAPIClient):
             description = '* {}'.format(description)
         if not description.endswith('.'):
             description += '.'
-        description = '\n'.join(textwrap.wrap(description.strip(), width=width))
-        return description
+        return '\n'.join(textwrap.wrap(description.strip(), width=width))
 
     def get(self, endpoint, url=reports_api_url, **kwargs):
         """
@@ -393,8 +392,8 @@ class TogglReportsClient(TogglAPIClient):
 
     def posts(self, workspace, since, until):
         """
-        High-level wrapper for `tasks` method to aggregate Toggl tasks by projects, format descriptions and round total
-        amount of minutes per project.
+        High-level wrapper for :meth:`tasks` method to aggregate Toggl tasks by projects, format descriptions and round
+        total amount of minutes per project.
 
         :param workspace: Dictionary object which represents Toggl workspace.
         :type workspace: dict
