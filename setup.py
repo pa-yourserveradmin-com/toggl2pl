@@ -1,11 +1,16 @@
 from setuptools import setup
 import yaml
 
-with open('.gitlab-ci.yml', 'r') as fp:
-    version = yaml.safe_load(fp)['variables']['PACKAGE_VERSION']
 
-with open('README.md', 'r') as fp:
-    long_description = fp.read()
+def readme():
+    with open('README.md', 'r') as fp:
+        return fp.read()
+
+
+def version():
+    with open('.gitlab-ci.yml', 'r') as fp:
+        return yaml.safe_load(fp)['variables']['PACKAGE_VERSION']
+
 
 setup(
     author='Andrew Poltavchenko',
@@ -30,7 +35,7 @@ setup(
         'yaml'
     ],
     license='MIT',
-    long_description=long_description,
+    long_description=readme(),
     long_description_content_type='text/markdown',
     name='toggl2pl',
     packages=[
@@ -40,5 +45,5 @@ setup(
         'scripts/toggl2pl'
     ],
     url='https://git-y.yourserveradmin.com/pa/toggl2pl',
-    version=version,
+    version=version(),
 )
