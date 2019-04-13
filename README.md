@@ -69,7 +69,7 @@ the next common Python modules manual installation steps:
 For example, clone the project using Git:
 
 ```bash
-git clone https://git-y.yourserveradmin.com/pa/toggl2pl.git
+git clone https://github.com/pa-yourserveradmin-com/toggl2pl.git
 cd toggl2pl
 ```
 

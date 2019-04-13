@@ -16,9 +16,12 @@ setup(
     author='Andrew Poltavchenko',
     author_email='pa@yourserveradmin.com',
     classifiers=[
+        'Development Status :: 1 - Planning',
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 3',
+        'Natural Language :: English',
+        "Operating System :: OS Independent",
+        'Programming Language :: Python :: 3 :: Only',
+        'Programming Language :: Python :: Implementation :: CPython',
     ],
     description='Python module and tool to simplify time entries export from Toggl into Project Laboratory',
     entry_points={
@@ -44,6 +47,6 @@ setup(
     scripts=[
         'scripts/toggl2pl'
     ],
-    url='https://git-y.yourserveradmin.com/pa/toggl2pl',
+    url='https://github.com/pa-yourserveradmin-com/toggl2pl',
     version=version(),
 )
