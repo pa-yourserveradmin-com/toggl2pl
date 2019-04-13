@@ -29,10 +29,10 @@ setup(
     },
     include_package_data=True,
     install_requires=[
+        'PyYAML',
         'requests',
         'tabulate',
         'tqdm',
-        'yaml'
     ],
     license='MIT',
     long_description=readme(),
