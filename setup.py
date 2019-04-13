@@ -7,6 +7,11 @@ def readme():
         return fp.read()
 
 
+def requirements():
+    with open('requirements.txt', 'r') as fp:
+        return fp.read().split()
+
+
 def version():
     with open('.gitlab-ci.yml', 'r') as fp:
         return yaml.safe_load(fp)['variables']['PACKAGE_VERSION']
@@ -31,12 +36,7 @@ setup(
             ]
     },
     include_package_data=True,
-    install_requires=[
-        'PyYAML',
-        'requests',
-        'tabulate',
-        'tqdm',
-    ],
+    install_requires=requirements(),
     license='MIT',
     long_description=readme(),
     long_description_content_type='text/markdown',
