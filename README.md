@@ -226,7 +226,7 @@ acceptable way.
 * [x] automate build of Windows executable file to provide an ability to use the
 tool on this platform.
 * [x] document existing code, CLI flags and configuration options with Sphinx.
-* [ ] freeze existing functional and tweak code to resolve regressions and improve
+* [x] freeze existing functional and tweak code to resolve regressions and improve
 quality.
 * [ ] unit tests and coverage reports for existing minimal set of features.
 
