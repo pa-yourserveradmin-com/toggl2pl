@@ -5,10 +5,28 @@ variables:
   PACKAGE_VERSION: 1.0.2
 
 stages:
+  - coverage
   - build
-  - test
+  - verify
   - package
   - sign
+
+coverage:report:
+  before_script:
+    - apt update
+    - apt install --assume-yes binutils
+    - pip install virtualenv
+    - virtualenv --python=python3 venv
+    - venv/bin/pip install --upgrade --requirement requirements.txt
+  image: python:3.7.2-slim-stretch
+  script:
+    - venv/bin/coverage run -m pytest
+    - venv/bin/coverage report
+  stage: coverage
+  tags:
+    - docker
+  variables:
+    DEBIAN_FRONTEND: noninteractive
 
 build:linux:
   artifacts:
@@ -20,9 +38,9 @@ build:linux:
     - apt install --assume-yes binutils
     - pip install virtualenv
     - virtualenv --python=python3 venv
+    - venv/bin/pip install --upgrade --requirement requirements.txt
   image: python:3.7.2-slim-stretch
   script:
-    - venv/bin/pip install --upgrade --requirement requirements.txt
     - venv/bin/pyinstaller --name ${PACKAGE_NAME} --onefile scripts/${PACKAGE_NAME}
   stage: build
   tags:
@@ -38,9 +56,9 @@ build:windows:
   before_script:
     - pip install virtualenv
     - virtualenv venv
-  script:
     - .\venv\Scripts\pip.exe install --upgrade pywin32
     - .\venv\Scripts\pip.exe install --upgrade --requirement requirements.txt
+  script:
     - .\venv\Scripts\pyinstaller.exe --name %PACKAGE_NAME% --onefile .\scripts\%PACKAGE_NAME%
   stage: build
   tags:
@@ -49,53 +67,53 @@ build:windows:
   variables:
     PATH: C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files\Git\cmd;C:\Users\admin\AppData\Local\Programs\Python\Python37-32\Scripts\;C:\Users\admin\AppData\Local\Programs\Python\Python37-32\;C:\Users\admin\AppData\Local\Microsoft\WindowsApps;C:\Windows\System32\downlevel;
 
-test:rpm:el7:
+verify:rpm:el7:
   dependencies:
     - build:linux
   image: centos:7.6.1810
   script:
     - ./dist/${PACKAGE_NAME} --help
-  stage: test
+  stage: verify
   tags:
     - docker
 
-test:rpm:fc29:
+verify:rpm:fc29:
   dependencies:
     - build:linux
   image: fedora:29
   script:
     - ./dist/${PACKAGE_NAME} --help
-  stage: test
+  stage: verify
   tags:
     - docker
 
-test:deb:jessie:
+verify:deb:jessie:
   dependencies:
     - build:linux
   image: debian:jessie-slim
   script:
     - ./dist/${PACKAGE_NAME} --help
-  stage: test
+  stage: verify
   tags:
     - docker
 
-test:deb:stretch:
+verify:deb:stretch:
   dependencies:
     - build:linux
   image: debian:stretch-slim
   script:
     - ./dist/${PACKAGE_NAME} --help
-  stage: test
+  stage: verify
   tags:
     - docker
 
-test:windows:
+verify:windows:
   dependencies:
     - build:windows
   image: debian:stretch-slim
   script:
     - .\dist\%PACKAGE_NAME%.exe --help
-  stage: test
+  stage: verify
   tags:
     - windows
 
