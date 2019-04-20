@@ -1,0 +1,96 @@
+---
+version: '3.7'
+
+configs:
+  traefik_toml:
+    file: development/traefik.toml
+
+networks:
+  internal:
+    attachable: true
+    driver: overlay
+
+services:
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.7.1
+    deploy:
+      endpoint_mode: dnsrr
+      labels:
+        traefik.backend: elasticsearch
+        traefik.enable: 'true'
+        traefik.frontend.rule: Host:elasticsearch
+        traefik.port: 9200
+      mode: replicated
+      replicas: 3
+      restart_policy:
+        condition: any
+        delay: 5s
+        window: 120s
+      update_config:
+        parallelism: 1
+        failure_action: rollback
+        delay: 30s
+    environment:
+      bootstrap.memory_lock: 'false'
+      cluster.name: 'toggl2es'
+      discovery.zen.ping.unicast.hosts: elasticsearch
+      ES_JAVA_OPTS: '-Xms512m -Xmx512m'
+      xpack.monitoring.collection.enabled: 'true'
+    networks:
+      internal:
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:6.7.1
+    deploy:
+      endpoint_mode: dnsrr
+      labels:
+        traefik.backend: kibana
+        traefik.enable: 'true'
+        traefik.frontend.rule: Host:kibana
+        traefik.port: 5601
+      mode: replicated
+      replicas: 3
+      restart_policy:
+        condition: any
+        delay: 5s
+        window: 120s
+      update_config:
+        parallelism: 1
+        failure_action: rollback
+        delay: 30s
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    networks:
+      internal:
+
+  traefik:
+    image: traefik:1.7.9
+    configs:
+      - source: traefik_toml
+        target: /traefik.toml
+    deploy:
+      endpoint_mode: dnsrr
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: any
+        delay: 5s
+        window: 120s
+      update_config:
+        parallelism: 1
+        failure_action: rollback
+        delay: 30s
+    networks:
+      internal:
+    ports:
+      - published: 80
+        target: 80
+        mode: host
+      - published: 8080
+        target: 8080
+        mode: host
+    volumes:
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
