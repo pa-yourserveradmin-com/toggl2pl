@@ -17,8 +17,8 @@ coverage:report:
     - apt install --assume-yes binutils
     - pip install virtualenv
     - virtualenv --python=python3 venv
-    - venv/bin/pip install --upgrade --requirement tests/requirements.txt
     - venv/bin/pip install --upgrade --requirement requirements.txt
+    - venv/bin/pip install --upgrade --requirement tests/requirements.txt
   image: python:3.7.2-slim-stretch
   script:
     - venv/bin/coverage run -m pytest
