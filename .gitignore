@@ -1,9 +1,10 @@
 _build
+.coverage
 .idea
 build
 dist
+htmlcov/
 toggl2pl.spec
-!SPECS/toggl2pl.spec
 venv
 *.pyc
 *.pyo

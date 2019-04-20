@@ -20,6 +20,21 @@ if platform.system() == 'Windows':
 ROUND_BASE = os.getenv('ROUND_BASE', 5)
 
 
+def check_workspace(workspace):
+    """
+    Check provided workspace data format and value.
+
+    :param workspace: Toggl workspace data to check.
+    :type workspace: dict
+    :return: Dictionary object which represents single Toggl workspace.
+    :rtype: dict
+    :raises TypeError: In case provided workspace data has type `list` or `None`.
+    """
+    if isinstance(workspace, list) or not workspace:
+        raise TypeError(yaml.dump(workspace))
+    return workspace
+
+
 def parse_arguments():
     """
     Function to handle argument parser configuration (argument definitions, default values and so on).
@@ -71,18 +86,15 @@ def main():
         verify=config['pl']['verify']
     )
     toggl = TogglReportsClient(api_token=config['toggl']['api_token'], user_agent=APP_KEY)
-
-    config['toggl']['workspace'] = toggl.workspaces(name=config['toggl']['workspace'])
-    if isinstance(config['toggl']['workspace'], list) or not config['toggl']['workspace']:
-        sys.exit(yaml.dump(config['toggl']['workspace']))
-
-    clients = toggl.clients(wid=config['toggl']['workspace']['id'])
+    
+    workspace = check_workspace(workspace=toggl.workspaces(name=config['toggl']['workspace']))
+    clients = toggl.clients(wid=workspace['id'])
     projects = pl.projects(excluded_projects=config['pl']['excluded_projects'])
-    toggl_projects = toggl.projects(wid=config['toggl']['workspace']['id'])
+    toggl_projects = toggl.projects(wid=workspace['id'])
 
     for project in projects:
         if project not in clients:
-            client = toggl.create_client(name=project, wid=config['toggl']['workspace']['id'])
+            client = toggl.create_client(name=project, wid=workspace['id'])
             clients.update(
                 {
                     client['name']: client
@@ -100,10 +112,10 @@ def main():
             )
         for item in projects[project]['tasks']:
             if item not in toggl_projects[clients[project]['id']]:
-                toggl.create_project(cid=clients[project]['id'], name=item, wid=config['toggl']['workspace']['id'])
+                toggl.create_project(cid=clients[project]['id'], name=item, wid=workspace['id'])
                 sleep(0.5)
 
-    posts = toggl.posts(since=known_args.date, until=known_args.date, wid=config['toggl']['workspace']['id'])
+    posts = toggl.posts(since=known_args.date, until=known_args.date, wid=workspace['id'])
 
     if not posts:
         sys.exit('There are no posts for {} yet. Please post something and try again.'.format(known_args.date))
