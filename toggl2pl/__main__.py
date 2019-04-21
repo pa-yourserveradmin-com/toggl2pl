@@ -31,7 +31,7 @@ def parse_arguments():
     parser.add_argument(
         '-c',
         '--config',
-        help='Path to configuration file (default: ~{config})'.format(config=CONFIG_PATH),
+        help='Path to configuration file (default: ~{config}).'.format(config=CONFIG_PATH),
         type=str,
         default='{home}{config}'.format(home=str(Path.home()), config=CONFIG_PATH)
     )
@@ -50,13 +50,13 @@ def parse_arguments():
     )
     parser.add_argument(
         '--serve',
-        help='Start application in server mode',
+        help='Start application in server mode (not yet implemented).',
         action='store_true'
     )
     parser.add_argument(
         '-w',
         '--why-run',
-        help='Run client in why-run mode to preview posts without publishing',
+        help='Run client in why-run mode to preview posts without publishing.',
         action='store_true'
     )
     return parser
@@ -64,7 +64,7 @@ def parse_arguments():
 
 def review(posts, tablefmt='fancy_grid', why_run=False):
     """
-    Prints table with data to post into standard output and asks about confirmation before actual data import/export.
+    Print data into standard output and ask about confirmation before actual data import/export.
 
     :param posts: List of posts imported from source time tracker and to be published into target tracker during export.
     :type posts: list
