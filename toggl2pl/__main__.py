@@ -63,6 +63,11 @@ def parse_arguments():
         help='Round the number of minutes spent on each project to +/- {} minutes.'.format(ROUND_BASE),
         action='store_true'
     )
+    parser.add_argument(
+        '--serve',
+        help='Start application in server mode',
+        action='store_true'
+    )
     return parser
 
 
@@ -77,6 +82,9 @@ def main():
             config = yaml.safe_load(fp)
     except FileNotFoundError as nf:
         sys.exit(nf)
+
+    if known_args.serve:
+        raise NotImplementedError('Server mode is not yet implemented')
 
     pl = PL(
         app_key=APP_KEY,
