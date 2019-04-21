@@ -53,10 +53,16 @@ def parse_arguments():
         help='Start application in server mode',
         action='store_true'
     )
+    parser.add_argument(
+        '-w',
+        '--why-run',
+        help='Run client in why-run mode to preview posts without publishing',
+        action='store_true'
+    )
     return parser
 
 
-def review(posts, tablefmt='fancy_grid'):
+def review(posts, tablefmt='fancy_grid', why_run=False):
     """
     Prints table with data to post into standard output and asks about confirmation before actual data import/export.
 
@@ -64,16 +70,20 @@ def review(posts, tablefmt='fancy_grid'):
     :type posts: list
     :param tablefmt: The table format to use (recommended formats are: plain, simple, rst and fancy_grid).
     :type tablefmt: str
+    :param why_run: Optional flag to enable `why-run` mode (preview posts without publishing).
+    :type why_run: bool
     :return: The provided list of posts without any modifications.
     :rtype: list
     """
     headers = ('Project', 'Task', 'Description', 'Real Duration (min)', 'Rounded Duration (min)')
     print(tabulate(tabular_data=posts, headers=headers, tablefmt=tablefmt))
-    try:
-        input('\nPress Enter to continue or Ctrl-C to abort...')
-    except KeyboardInterrupt:
-        sys.exit('\nExport interrupted, cancelling operation...')
-    return posts
+    if not why_run:
+        try:
+            input('\nPress Enter to continue or Ctrl-C to abort...')
+        except KeyboardInterrupt:
+            sys.exit('\nExport interrupted, cancelling operation...')
+        return posts
+    sys.exit()
 
 
 def main():
@@ -93,7 +103,7 @@ def main():
         raise NotImplementedError('Server mode is not yet implemented')
 
     client = Client(config=config)
-    posts = review(client.posts(since=known_args.date, until=known_args.date))
+    posts = review(posts=client.posts(since=known_args.date, until=known_args.date), why_run=known_args.why_run)
 
     for post in tqdm(posts, desc='posts'):
         project, task, description, duration, rounded = post
