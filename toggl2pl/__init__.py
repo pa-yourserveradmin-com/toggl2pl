@@ -1,9 +1,79 @@
+from time import sleep
 import logging
 import requests
 import sys
 import textwrap
 import urllib3
 import yaml
+
+
+class Client(object):
+
+    def __init__(self, config):
+        self.pl = PL(
+            app_key=config['pl']['app_key'],
+            base_url=config['pl']['base_url'],
+            log_level=config['log_level'],
+            user_key=config['pl']['user_key'],
+            verify=config['pl']['verify']
+        )
+        self.projects = self.pl.projects(excluded_projects=config['pl']['excluded_projects'])
+        self.toggl = TogglReportsClient(api_token=config['toggl']['api_token'], user_agent=config['pl']['app_key'])
+        self.workspace = self.check_workspace(workspace=self.toggl.workspaces(name=config['toggl']['workspace']))
+        self.sync()
+
+    def add_post(self, date, description, minutes, project_id, task_id):
+        return self.pl.add_post(
+            date=date,
+            description=description,
+            minutes=minutes,
+            project_id=project_id,
+            task_id=task_id
+        )
+
+    @staticmethod
+    def check_workspace(workspace):
+        """
+        Check provided workspace data format and value.
+
+        :param workspace: Toggl workspace data to check.
+        :type workspace: dict
+        :return: Dictionary object which represents single Toggl workspace.
+        :rtype: dict
+        :raises TypeError: In case provided workspace data has type `list` or `None`.
+        """
+        if isinstance(workspace, list) or not workspace:
+            raise TypeError(yaml.dump(workspace))
+        return workspace
+
+    def posts(self, since, until):
+        return self.toggl.posts(since=since, until=until, wid=self.workspace['id'])
+
+    def sync(self):
+        clients = self.toggl.clients(wid=self.workspace['id'])
+        projects = self.toggl.projects(wid=self.workspace['id'])
+        for project in self.projects:
+            if project not in clients:
+                client = self.toggl.create_client(name=project, wid=self.workspace['id'])
+                clients.update(
+                    {
+                        client['name']: client
+                    }
+                )
+                del clients[client['name']]['name']
+                sleep(0.5)
+            if clients[project]['id'] not in projects:
+                projects.update(
+                    {
+                        clients[project]['id']: [
+
+                        ]
+                    }
+                )
+            for item in self.projects[project]['tasks']:
+                if item not in projects[clients[project]['id']]:
+                    self.toggl.create_project(cid=clients[project]['id'], name=item, wid=self.workspace['id'])
+                    sleep(0.5)
 
 
 class PL(object):

@@ -2,9 +2,7 @@ from datetime import datetime
 from pathlib import Path
 from tabulate import tabulate
 from tqdm import tqdm
-from time import sleep
-from toggl2pl import PL
-from toggl2pl import TogglReportsClient
+from toggl2pl import Client
 import argparse
 import os
 import platform
@@ -20,75 +18,6 @@ if platform.system() == 'Windows':
     CONFIG_PATH = CONFIG_PATH.replace('/', '\\')
 
 ROUND_BASE = os.getenv('ROUND_BASE', 5)
-
-
-class Client(object):
-
-    def __init__(self, config):
-        self.pl = PL(
-            app_key=APP_KEY,
-            base_url=config['pl']['base_url'],
-            log_level=config['log_level'],
-            user_key=config['pl']['user_key'],
-            verify=config['pl']['verify']
-        )
-        self.projects = self.pl.projects(excluded_projects=config['pl']['excluded_projects'])
-        self.toggl = TogglReportsClient(api_token=config['toggl']['api_token'], user_agent=APP_KEY)
-        self.workspace = check_workspace(workspace=self.toggl.workspaces(name=config['toggl']['workspace']))
-        self.sync()
-
-    def add_post(self, date, description, minutes, project_id, task_id):
-        return self.pl.add_post(
-            date=date,
-            description=description,
-            minutes=minutes,
-            project_id=project_id,
-            task_id=task_id
-        )
-
-    def posts(self, since, until):
-        return self.toggl.posts(since=since, until=until, wid=self.workspace['id'])
-
-    def sync(self):
-        clients = self.toggl.clients(wid=self.workspace['id'])
-        projects = self.toggl.projects(wid=self.workspace['id'])
-        for project in self.projects:
-            if project not in clients:
-                client = self.toggl.create_client(name=project, wid=self.workspace['id'])
-                clients.update(
-                    {
-                        client['name']: client
-                    }
-                )
-                del clients[client['name']]['name']
-                sleep(0.5)
-            if clients[project]['id'] not in projects:
-                projects.update(
-                    {
-                        clients[project]['id']: [
-
-                        ]
-                    }
-                )
-            for item in self.projects[project]['tasks']:
-                if item not in projects[clients[project]['id']]:
-                    self.toggl.create_project(cid=clients[project]['id'], name=item, wid=self.workspace['id'])
-                    sleep(0.5)
-
-
-def check_workspace(workspace):
-    """
-    Check provided workspace data format and value.
-
-    :param workspace: Toggl workspace data to check.
-    :type workspace: dict
-    :return: Dictionary object which represents single Toggl workspace.
-    :rtype: dict
-    :raises TypeError: In case provided workspace data has type `list` or `None`.
-    """
-    if isinstance(workspace, list) or not workspace:
-        raise TypeError(yaml.dump(workspace))
-    return workspace
 
 
 def parse_arguments():
@@ -138,6 +67,7 @@ def main():
             config = yaml.safe_load(fp)
     except FileNotFoundError as nf:
         sys.exit(nf)
+    config['pl']['app_key'] = APP_KEY
 
     if known_args.serve:
         raise NotImplementedError('Server mode is not yet implemented')
