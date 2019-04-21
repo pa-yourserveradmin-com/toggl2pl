@@ -22,13 +22,13 @@ class Client(object):
         self.workspace = self.check_workspace(workspace=self.toggl.workspaces(name=config['toggl']['workspace']))
         self.sync()
 
-    def add_post(self, date, description, minutes, project_id, task_id):
+    def add_post(self, date, description, minutes, project, task):
         return self.pl.add_post(
             date=date,
             description=description,
             minutes=minutes,
-            project_id=project_id,
-            task_id=task_id
+            project_id=self.projects[project]['id'],
+            task_id=self.projects[project]['tasks'][task]['id']
         )
 
     @staticmethod

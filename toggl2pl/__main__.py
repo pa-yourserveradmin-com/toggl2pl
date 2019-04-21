@@ -56,6 +56,26 @@ def parse_arguments():
     return parser
 
 
+def review(posts, tablefmt='fancy_grid'):
+    """
+    Prints table with data to post into standard output and asks about confirmation before actual data import/export.
+
+    :param posts: List of posts imported from source time tracker and to be published into target tracker during export.
+    :type posts: list
+    :param tablefmt: The table format to use (recommended formats are: plain, simple, rst and fancy_grid).
+    :type tablefmt: str
+    :return: The provided list of posts without any modifications.
+    :rtype: list
+    """
+    headers = ('Project', 'Task', 'Description', 'Real Duration (min)', 'Rounded Duration (min)')
+    print(tabulate(tabular_data=posts, headers=headers, tablefmt=tablefmt))
+    try:
+        input('\nPress Enter to continue or Ctrl-C to abort...')
+    except KeyboardInterrupt:
+        sys.exit('\nExport interrupted, cancelling operation...')
+    return posts
+
+
 def main():
     """
     Main entry point used by toggl2pl tool to process command line arguments, parse configuration file and use the
@@ -65,25 +85,15 @@ def main():
     try:
         with open(known_args.config, 'r') as fp:
             config = yaml.safe_load(fp)
+            config['pl']['app_key'] = APP_KEY
     except FileNotFoundError as nf:
         sys.exit(nf)
-    config['pl']['app_key'] = APP_KEY
 
     if known_args.serve:
         raise NotImplementedError('Server mode is not yet implemented')
 
     client = Client(config=config)
-    posts = client.posts(since=known_args.date, until=known_args.date)
-    if not posts:
-        sys.exit('There are no posts for {} yet. Please post something and try again.'.format(known_args.date))
-
-    headers = ('Project', 'Task', 'Description', 'Real Duration (min)', 'Rounded Duration (min)')
-    print(tabulate(tabular_data=posts, headers=headers, tablefmt=config['tablefmt']))
-
-    try:
-        input('\nPress Enter to continue or Ctrl-C to abort...')
-    except KeyboardInterrupt:
-        sys.exit('\nExport interrupted, cancelling operation...')
+    posts = review(client.posts(since=known_args.date, until=known_args.date))
 
     for post in tqdm(posts, desc='posts'):
         project, task, description, duration, rounded = post
@@ -91,6 +101,6 @@ def main():
             date=known_args.date,
             description=description,
             minutes=rounded if known_args.round else duration,
-            project_id=client.projects[project]['id'],
-            task_id=client.projects[project]['tasks'][task]['id'],
+            project=project,
+            task=task,
         )
