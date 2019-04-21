@@ -14,10 +14,66 @@ import yaml
 
 # The required PL application key used to gather application usage statistic
 APP_KEY = 'fba04c0786f881822dd9f7aa0d2530c6:o@$s^^JG8a4w9lgJcPH*'
+
 CONFIG_PATH = '/.toggl2pl/config.yml'
 if platform.system() == 'Windows':
     CONFIG_PATH = CONFIG_PATH.replace('/', '\\')
+
 ROUND_BASE = os.getenv('ROUND_BASE', 5)
+
+
+class Client(object):
+
+    def __init__(self, config):
+        self.pl = PL(
+            app_key=APP_KEY,
+            base_url=config['pl']['base_url'],
+            log_level=config['log_level'],
+            user_key=config['pl']['user_key'],
+            verify=config['pl']['verify']
+        )
+        self.projects = self.pl.projects(excluded_projects=config['pl']['excluded_projects'])
+        self.toggl = TogglReportsClient(api_token=config['toggl']['api_token'], user_agent=APP_KEY)
+        self.workspace = check_workspace(workspace=self.toggl.workspaces(name=config['toggl']['workspace']))
+        self.sync()
+
+    def add_post(self, date, description, minutes, project_id, task_id):
+        return self.pl.add_post(
+            date=date,
+            description=description,
+            minutes=minutes,
+            project_id=project_id,
+            task_id=task_id
+        )
+
+    def posts(self, since, until):
+        return self.toggl.posts(since=since, until=until, wid=self.workspace['id'])
+
+    def sync(self):
+        clients = self.toggl.clients(wid=self.workspace['id'])
+        projects = self.toggl.projects(wid=self.workspace['id'])
+        for project in self.projects:
+            if project not in clients:
+                client = self.toggl.create_client(name=project, wid=self.workspace['id'])
+                clients.update(
+                    {
+                        client['name']: client
+                    }
+                )
+                del clients[client['name']]['name']
+                sleep(0.5)
+            if clients[project]['id'] not in projects:
+                projects.update(
+                    {
+                        clients[project]['id']: [
+
+                        ]
+                    }
+                )
+            for item in self.projects[project]['tasks']:
+                if item not in projects[clients[project]['id']]:
+                    self.toggl.create_project(cid=clients[project]['id'], name=item, wid=self.workspace['id'])
+                    sleep(0.5)
 
 
 def check_workspace(workspace):
@@ -86,49 +142,12 @@ def main():
     if known_args.serve:
         raise NotImplementedError('Server mode is not yet implemented')
 
-    pl = PL(
-        app_key=APP_KEY,
-        base_url=config['pl']['base_url'],
-        log_level=config['log_level'],
-        user_key=config['pl']['user_key'],
-        verify=config['pl']['verify']
-    )
-    toggl = TogglReportsClient(api_token=config['toggl']['api_token'], user_agent=APP_KEY)
-    
-    workspace = check_workspace(workspace=toggl.workspaces(name=config['toggl']['workspace']))
-    clients = toggl.clients(wid=workspace['id'])
-    projects = pl.projects(excluded_projects=config['pl']['excluded_projects'])
-    toggl_projects = toggl.projects(wid=workspace['id'])
-
-    for project in projects:
-        if project not in clients:
-            client = toggl.create_client(name=project, wid=workspace['id'])
-            clients.update(
-                {
-                    client['name']: client
-                }
-            )
-            del clients[client['name']]['name']
-            sleep(0.5)
-        if clients[project]['id'] not in toggl_projects:
-            toggl_projects.update(
-                {
-                    clients[project]['id']: [
-
-                    ]
-                }
-            )
-        for item in projects[project]['tasks']:
-            if item not in toggl_projects[clients[project]['id']]:
-                toggl.create_project(cid=clients[project]['id'], name=item, wid=workspace['id'])
-                sleep(0.5)
-
-    posts = toggl.posts(since=known_args.date, until=known_args.date, wid=workspace['id'])
-
+    client = Client(config=config)
+    posts = client.posts(since=known_args.date, until=known_args.date)
     if not posts:
         sys.exit('There are no posts for {} yet. Please post something and try again.'.format(known_args.date))
 
-    headers = ('Client', 'Project', 'Description', 'Duration (min)', 'Rounded (min)')
+    headers = ('Project', 'Task', 'Description', 'Real Duration (min)', 'Rounded Duration (min)')
     print(tabulate(tabular_data=posts, headers=headers, tablefmt=config['tablefmt']))
 
     try:
@@ -137,11 +156,11 @@ def main():
         sys.exit('\nExport interrupted, cancelling operation...')
 
     for post in tqdm(posts, desc='posts'):
-        client, project, description, duration, rounded = post
-        pl.add_post(
+        project, task, description, duration, rounded = post
+        client.add_post(
             date=known_args.date,
             description=description,
             minutes=rounded if known_args.round else duration,
-            project_id=projects[client]['id'],
-            task_id=projects[client]['tasks'][project]['id'],
+            project_id=client.projects[project]['id'],
+            task_id=client.projects[project]['tasks'][task]['id'],
         )
