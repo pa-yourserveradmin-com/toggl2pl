@@ -6,20 +6,23 @@ import textwrap
 import urllib3
 import yaml
 
+# The required PL application key used to gather application usage statistic
+APP_KEY = 'fba04c0786f881822dd9f7aa0d2530c6:o@$s^^JG8a4w9lgJcPH*'
+
 
 class Client(object):
 
-    def __init__(self, config):
+    def __init__(self, api_token, base_url, user_key, workspace, excluded_projects=None, log_level='info', verify=True):
         self.pl = PL(
-            app_key=config['pl']['app_key'],
-            base_url=config['pl']['base_url'],
-            log_level=config['log_level'],
-            user_key=config['pl']['user_key'],
-            verify=config['pl']['verify']
+            app_key=APP_KEY,
+            base_url=base_url,
+            log_level=log_level,
+            user_key=user_key,
+            verify=verify
         )
-        self.projects = self.pl.projects(excluded_projects=config['pl']['excluded_projects'])
-        self.toggl = TogglReportsClient(api_token=config['toggl']['api_token'], user_agent=config['pl']['app_key'])
-        self.workspace = self.check_workspace(workspace=self.toggl.workspaces(name=config['toggl']['workspace']))
+        self.projects = self.pl.projects(excluded_projects=excluded_projects)
+        self.toggl = TogglReportsClient(api_token=api_token, user_agent=APP_KEY)
+        self.workspace = self.check_workspace(workspace=self.toggl.workspaces(name=workspace))
 
     def add_post(self, date, description, minutes, project, task):
         return self.pl.add_post(

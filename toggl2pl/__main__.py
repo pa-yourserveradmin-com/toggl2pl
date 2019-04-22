@@ -10,9 +10,6 @@ import sys
 import yaml
 
 
-# The required PL application key used to gather application usage statistic
-APP_KEY = 'fba04c0786f881822dd9f7aa0d2530c6:o@$s^^JG8a4w9lgJcPH*'
-
 CONFIG_PATH = '/.toggl2pl/config.yml'
 if platform.system() == 'Windows':
     CONFIG_PATH = CONFIG_PATH.replace('/', '\\')
@@ -100,14 +97,22 @@ def main():
     try:
         with open(known_args.config, 'r') as fp:
             config = yaml.safe_load(fp)
-            config['pl']['app_key'] = APP_KEY
     except FileNotFoundError as nf:
         sys.exit(nf)
 
     if known_args.serve:
         raise NotImplementedError('Server mode is not yet implemented')
 
-    client = Client(config=config)
+    client = Client(
+        api_token=config['toggl']['api_token'],
+        base_url=config['pl']['base_url'],
+        excluded_projects=config['pl']['excluded_projects'],
+        log_level=config['log_level'],
+        user_key=config['pl']['user_key'],
+        verify=config['pl']['verify'],
+        workspace=config['toggl']['workspace']
+    )
+
     if known_args.sync:
         client.sync()
 
