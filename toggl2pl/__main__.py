@@ -54,6 +54,11 @@ def parse_arguments():
         action='store_true'
     )
     parser.add_argument(
+        '--sync',
+        help='Synchronize projects and tasks between time trackers.',
+        action='store_true'
+    )
+    parser.add_argument(
         '-w',
         '--why-run',
         help='Run client in why-run mode to preview posts without publishing.',
@@ -103,7 +108,8 @@ def main():
         raise NotImplementedError('Server mode is not yet implemented')
 
     client = Client(config=config)
-    client.sync()
+    if known_args.sync:
+        client.sync()
 
     posts = review(
         posts=client.posts(
