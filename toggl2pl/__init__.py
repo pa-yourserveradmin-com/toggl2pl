@@ -346,6 +346,15 @@ class TogglAPIClient(object):
             return clients
         return dict()
 
+    def me(self):
+        """
+        Fetch information about the currently authenticated user account.
+
+        :return: Dictionary object with information about the currently authenticated user account.
+        :rtype: dict
+        """
+        return self.get(endpoint='me')['data']
+
     def post(self, endpoint, url=toggl_api_url, **kwargs):
         """
         Send provided keyword arguments to the combination of Toggl API URL and endpoint using HTTP POST request.
@@ -464,6 +473,15 @@ class TogglReportsClient(TogglAPIClient):
         if clients:
             return clients
         return dict()
+
+    def me(self):
+        """
+        Fetch information about the currently authenticated user account.
+
+        :return: Dictionary object with information about the currently authenticated user account.
+        :rtype: dict
+        """
+        return super().get(endpoint='me')['data']
 
     def posts(self, since, until, wid):
         """
