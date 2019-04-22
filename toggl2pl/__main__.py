@@ -17,6 +17,22 @@ if platform.system() == 'Windows':
 ROUND_BASE = os.getenv('ROUND_BASE', 5)
 
 
+def load_config(config):
+    """
+    Load configuration from supplied YAML formatted file.
+
+    :param config: The relative or absolute path to YAML configuration file.
+    :type config: str
+    :return: Dictionary object with configuration options loaded from file.
+    :rtype: dict
+    """
+    try:
+        with open(config, 'r') as fp:
+            return yaml.safe_load(fp)
+    except FileNotFoundError as nf:
+        sys.exit(nf)
+
+
 def parse_arguments():
     """
     Function to handle argument parser configuration (argument definitions, default values and so on).
@@ -46,11 +62,7 @@ def parse_arguments():
         action='store_true'
     )
     parser.add_argument(
-        '--serve',
-        help='Start application in server mode (not yet implemented).',
-        action='store_true'
-    )
-    parser.add_argument(
+        '-s',
         '--sync',
         help='Synchronize projects and tasks between time trackers.',
         action='store_true'
@@ -61,6 +73,12 @@ def parse_arguments():
         help='Run client in why-run mode to preview posts without publishing.',
         action='store_true'
     )
+    parser.set_defaults(func=run)
+    subparsers = parser.add_subparsers()
+    serve = subparsers.add_parser(name='serve', help='Start application in server mode (not yet implemented).')
+    serve.add_argument('-i', '--ipv4', type=str, help='The IPv4 address to run application on.', default='0.0.0.0')
+    serve.add_argument('-p', '--port', type=int, help='The TCP port to run application on.', default=5000)
+    serve.set_defaults(func=start)
     return parser
 
 
@@ -88,21 +106,14 @@ def review(posts, tablefmt='fancy_grid', why_run=False):
     sys.exit()
 
 
-def main():
+def run(known_args):
     """
-    Main entry point used by toggl2pl tool to process command line arguments, parse configuration file and use the
-    module API to interact with time trackers.
+    Run application in client mode (the way how to communicate with trackers depends on configuration file).
+
+    :param known_args: The argument parser namespace object with supplied arguments.
+    :type known_args: :obj:`argparse.Namespace`
     """
-    known_args, unknown_args = parse_arguments().parse_known_args()
-    try:
-        with open(known_args.config, 'r') as fp:
-            config = yaml.safe_load(fp)
-    except FileNotFoundError as nf:
-        sys.exit(nf)
-
-    if known_args.serve:
-        raise NotImplementedError('Server mode is not yet implemented')
-
+    config = load_config(config=known_args.config)
     client = Client(
         api_token=config['toggl']['api_token'],
         base_url=config['pl']['base_url'],
@@ -112,10 +123,8 @@ def main():
         verify=config['pl']['verify'],
         workspace=config['toggl']['workspace']
     )
-
     if known_args.sync:
         client.sync()
-
     posts = review(
         posts=client.posts(
             since=known_args.date,
@@ -123,7 +132,6 @@ def main():
         ),
         why_run=known_args.why_run
     )
-
     for post in tqdm(posts, desc='posts'):
         project, task, description, duration, rounded = post
         client.add_post(
@@ -133,3 +141,21 @@ def main():
             project=project,
             task=task,
         )
+
+
+def start(known_args):
+    """
+    Start application in server mode to serve incoming HTTP requests and process data received from clients.
+
+    :param known_args: The argument parser namespace object with supplied arguments.
+    :type known_args: :obj:`argparse.Namespace`
+    """
+    raise NotImplementedError('Server mode is not yet implemented')
+
+
+def main():
+    """
+    Main entry point used by toggl2pl script to process command line arguments and start application.
+    """
+    known_args, unknown_args = parse_arguments().parse_known_args()
+    known_args.func(known_args=known_args)
