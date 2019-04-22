@@ -103,7 +103,15 @@ def main():
         raise NotImplementedError('Server mode is not yet implemented')
 
     client = Client(config=config)
-    posts = review(posts=client.posts(since=known_args.date, until=known_args.date), why_run=known_args.why_run)
+    client.sync()
+
+    posts = review(
+        posts=client.posts(
+            since=known_args.date,
+            until=known_args.date
+        ),
+        why_run=known_args.why_run
+    )
 
     for post in tqdm(posts, desc='posts'):
         project, task, description, duration, rounded = post
