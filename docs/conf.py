@@ -41,6 +41,8 @@ version = '{maj}.{min}'.format(maj=version[0], min=version[1])
 extensions = [
     'recommonmark',
     'sphinx.ext.autodoc',
+    'sphinxcontrib.autohttp.flask',
+    'sphinxcontrib.autohttp.flaskqref',
     'sphinxarg.ext',
 ]
 
