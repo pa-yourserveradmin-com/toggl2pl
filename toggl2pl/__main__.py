@@ -125,13 +125,16 @@ def run(known_args):
     )
     if known_args.sync:
         client.sync()
-    posts = review(
-        posts=client.posts(
-            since=known_args.date,
-            until=known_args.date
-        ),
-        why_run=known_args.why_run
-    )
+    try:
+        posts = review(
+            posts=client.posts(
+                since=known_args.date,
+                until=known_args.date
+            ),
+            why_run=known_args.why_run
+        )
+    except AssertionError as ae:
+        sys.exit(yaml.dump(ae.args[0], allow_unicode=True))
     for post in tqdm(posts, desc='posts'):
         project, task, description, duration, rounded = post
         client.add_post(

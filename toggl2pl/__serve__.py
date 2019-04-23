@@ -1,4 +1,4 @@
-from flask import Blueprint, Flask, request, jsonify
+from flask import Blueprint, Flask, abort, make_response, jsonify, request
 from toggl2pl import Client
 import ast
 import os
@@ -55,10 +55,12 @@ def pull():
         verify=settings['verify'],
         workspace=data['workspace'],
     )
-    return jsonify(client.posts(since=data['since'], until=data['until']))
+    try:
+        return jsonify(client.posts(since=data['since'], until=data['until']))
+    except AssertionError as ae:
+        abort(make_response(jsonify(ae.args[0]), 500))
 
 
 @posts.route(rule='/push', methods=['PUT'])
 def push():
     pass
-
