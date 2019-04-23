@@ -5,6 +5,7 @@ API
    :maxdepth: 2
 
    Client
+   Serve
    PL
    Toggl
    Misc

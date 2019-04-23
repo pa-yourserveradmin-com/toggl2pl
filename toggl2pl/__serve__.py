@@ -35,10 +35,10 @@ def pull():
     :reqheader Content-Type: application/json
 
     :<json string api_token: The Toggl authentication token to use instead of username and password.
-    :<jsoon string excluded_projects: List of PL projects names to exclude from result.
+    :<json string excluded_projects: List of PL projects names to exclude from result.
     :<json string since: The *first* date in ISO 8601 (`YYYY-MM-DD`) format to pull posts from Toggl.
     :<json string until: The *last* date in ISO 8601 (`YYYY-MM-DD`) format to pull posts from Toggl.
-    :<jsoon string user_key: The Project Laboratory authentication token to use instead of username and password.
+    :<json string user_key: The Project Laboratory authentication token to use instead of username and password.
     :<json string workspace: The Toggl workspace name (case sensitive) to pull information from.
 
     :resheader Content-Type: application/json
@@ -66,7 +66,7 @@ def push():
     """
     Push single Project Laboratory task information.
 
-    .. :quickref: Pull Posts; Pull posts from Toggl and send to client.
+    .. :quickref: Push Posts; Push posts into Project Laboratory.
 
     :reqheader Content-Type: application/json
 
