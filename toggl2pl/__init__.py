@@ -562,17 +562,12 @@ class TogglReportsClient(TogglAPIClient):
             # GOTCHA: We want to have at least the next information about task: client, project and description. In case
             # some field is not filed the program must exit and ask to fill task details before continue with export.
             if None in (task['client'], task['project'], task['description']):
-                sys.exit(
-                    '\n{}\nPlease review and update in Toggl the task properties set to null and try again'.format(
-                        yaml.dump(
-                            {
-                                'client': task['client'],
-                                'project': task['project'],
-                                'description': task['description']
-                            },
-                            allow_unicode=True
-                        )
-                    )
+                raise AssertionError(
+                    {
+                        'client': task['client'],
+                        'project': task['project'],
+                        'description': task['description']
+                    }
                 )
             duration = int(task['dur'] / 1000)
             if task['client'] not in tasks:
