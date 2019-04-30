@@ -49,6 +49,7 @@ services:
     deploy:
       endpoint_mode: dnsrr
       labels:
+        traefik.frontend.auth.forward.address: ${KIBANA_AUTH_URL}
         traefik.backend: kibana
         traefik.enable: 'true'
         traefik.frontend.rule: Host:${KIBANA_HOST}
