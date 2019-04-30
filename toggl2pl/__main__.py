@@ -1,9 +1,13 @@
 from datetime import datetime
+from paste.translogger import TransLogger
 from pathlib import Path
 from tabulate import tabulate
+from toggl2pl.__serve__ import create_app
 from tqdm import tqdm
 from toggl2pl import Client
+from waitress import serve
 import argparse
+import logging
 import os
 import platform
 import sys
@@ -106,6 +110,47 @@ def review(posts, tablefmt='fancy_grid', why_run=False):
     sys.exit()
 
 
+def serverful(api_token, api_url, since, until, user_key, workspace, excluded_projects=None, why_run=False):
+    # TODO: The code in this method must be moved from here to some class object representing API client.
+    from requests.exceptions import ConnectionError
+    import requests
+    try:
+        posts = requests.get(
+            url=f'{api_url}/posts/pull',
+            json={
+                'api_token': api_token,
+                'excluded_projects': excluded_projects,
+                'since': since,
+                'until': until,
+                'user_key': user_key,
+                'workspace': workspace
+            }
+        )
+        if posts.status_code != 200:
+            sys.exit(yaml.dump(posts.json(), allow_unicode=True))
+        posts = review(posts=posts.json(), why_run=why_run)
+        for post in tqdm(posts, desc='posts'):
+            project, task, description, duration, rounded = post
+            response = requests.put(
+                url=f'{api_url}/posts/push',
+                json={
+                    'api_token': api_token,
+                    'date': since,
+                    'description': description,
+                    'minutes': rounded,
+                    'project': project,
+                    'task': task,
+                    'user_key': user_key,
+                    'workspace': workspace
+                }
+            )
+            if response.status_code != 200:
+                sys.exit(yaml.dump(response.json(), allow_unicode=True))
+    except ConnectionError as ce:
+        sys.exit(ce)
+    sys.exit()
+
+
 def run(known_args):
     """
     Run application in client mode (the way how to communicate with trackers depends on configuration file).
@@ -114,6 +159,18 @@ def run(known_args):
     :type known_args: :obj:`argparse.Namespace`
     """
     config = load_config(config=known_args.config)
+    if 'api_url' in config:
+        serverful(
+            api_token=config['toggl']['api_token'],
+            api_url=config['api_url'],
+            since=known_args.date,
+            until=known_args.date,
+            user_key=config['pl']['user_key'],
+            workspace=config['toggl']['workspace'],
+            excluded_projects=config['pl']['excluded_projects'],
+            why_run=known_args.why_run
+        )
+    # Server less client work handled below, i.e. client communicates directly with time trackers
     client = Client(
         api_token=config['toggl']['api_token'],
         base_url=config['pl']['base_url'],
@@ -153,7 +210,9 @@ def start(known_args):
     :param known_args: The argument parser namespace object with supplied arguments.
     :type known_args: :obj:`argparse.Namespace`
     """
-    raise NotImplementedError('Server mode is not yet implemented')
+    bind_address = '{}:{}'.format(known_args.ipv4, known_args.port)
+    logging.info(msg='starting application on {}'.format(bind_address))
+    serve(app=TransLogger(application=create_app()), listen=bind_address)
 
 
 def main():
