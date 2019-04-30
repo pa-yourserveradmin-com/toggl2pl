@@ -70,6 +70,30 @@ services:
     networks:
       internal:
 
+  toggl2pl:
+    image: ${CI_REGISTRY}/${CI_PROJECT_NAMESPACE}/${PACKAGE_NAME}:latest
+    deploy:
+      endpoint_mode: dnsrr
+      labels:
+        traefik.backend: toggl2pl
+        traefik.enable: 'true'
+        traefik.frontend.rule: Host:${TOGGL2PL_HOST}
+        traefik.port: 5000
+      mode: global
+      placement:
+        constraints:
+          - node.role == worker
+      restart_policy:
+        condition: any
+        delay: 10s
+        window: 30s
+      update_config:
+        parallelism: 1
+        failure_action: rollback
+        delay: 30s
+    networks:
+      internal:
+
   traefik:
     image: traefik:1.7.9
     configs:
