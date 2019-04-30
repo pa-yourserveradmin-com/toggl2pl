@@ -137,7 +137,8 @@ def serverful(api_token, api_url, since, until, user_key, workspace, excluded_pr
                     'api_token': api_token,
                     'date': since,
                     'description': description,
-                    'minutes': rounded,
+                    'duration': duration,
+                    'rounded': rounded,
                     'project': project,
                     'task': task,
                     'user_key': user_key,
@@ -211,7 +212,7 @@ def start(known_args):
     :type known_args: :obj:`argparse.Namespace`
     """
     bind_address = '{}:{}'.format(known_args.ipv4, known_args.port)
-    logging.info(msg='starting application on {}'.format(bind_address))
+    logging.info(msg=f'starting application on {bind_address}')
     serve(app=TransLogger(application=create_app()), listen=bind_address)
 
 

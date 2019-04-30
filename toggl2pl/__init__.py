@@ -22,6 +22,7 @@ class Client(object):
         )
         self.projects = self.pl.projects(excluded_projects=excluded_projects)
         self.toggl = TogglReportsClient(api_token=api_token, user_agent=APP_KEY)
+        self.me = self.toggl.me()
         self.workspace = self.check_workspace(workspace=self.toggl.workspaces(name=workspace))
 
     def add_post(self, date, description, minutes, project, task):

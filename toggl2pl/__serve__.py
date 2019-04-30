@@ -1,6 +1,9 @@
+from elasticsearch import Elasticsearch
 from flask import Blueprint, Flask, abort, make_response, jsonify, request
 from toggl2pl import Client
 import ast
+from datetime import datetime
+import logging
 import os
 
 
@@ -73,8 +76,9 @@ def push():
     :<json string api_token: The Toggl authentication token to use instead of username and password.
     :<json string date: The date in ISO 8601 (`YYYY-MM-DD`) format when work was actually done.
     :<json string description: Relatively short description of the work done as a part of the parent task.
-    :<json integer minutes: Total amount of minutes spent during work on the task entry.
+    :<json integer duration: The real amount of minutes spent during work on the task entry.
     :<json string project: The Project Laboratory task parent project name.
+    :<json integer rounded: The rounded amount of minutes spent during work on the task entry.
     :<json string task: The Project Laboratory task name.
     :<json string user_key: The Project Laboratory authentication token to use instead of username and password.
     :<json string workspace: The Toggl workspace name (case sensitive) to pull information from.
@@ -93,12 +97,31 @@ def push():
         verify=settings['verify'],
         workspace=data['workspace'],
     )
-    return jsonify(
+    response = jsonify(
         client.add_post(
             date=data['date'],
             description=data['description'],
-            minutes=data['minutes'],
+            minutes=data['rounded'],  # TODO: Start from rounded but provide an ability to optionally post real duration
             project=data['project'],
             task=data['task']
         )
     )
+    # TODO: Rewrite Elasticsearch integration to asynchronous job executing outside of the main request context.
+    try:
+        es = Elasticsearch(hosts=os.getenv('ELASTICSEARCH_URL', 'http://elasticsearch:9200').split(','))
+        es.index(
+            body={
+                'description': data['description'],
+                'duration': data['duration'],
+                'email': client.me['email'],
+                'project': data['project'],
+                'rounded': data['rounded'],
+                'task': data['task'],
+                'timestamp': datetime.strptime(data['date'], '%Y-%m-%d'),
+            },
+            doc_type='toggl',
+            index='toggl',
+        )
+    except Exception as ex:
+        logging.warning(msg=ex)
+    return response
