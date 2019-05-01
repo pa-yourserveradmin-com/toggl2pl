@@ -97,7 +97,7 @@ services:
       internal:
 
   traefik:
-    image: traefik:1.7.9
+    image: traefik:1.7.11-alpine
     configs:
       - source: traefik_toml
         target: /traefik.toml
