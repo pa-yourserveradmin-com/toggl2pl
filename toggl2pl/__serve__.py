@@ -113,7 +113,7 @@ def push():
             body={
                 'description': data['description'],
                 'duration': data['duration'],
-                'email': client.me['email'],
+                'employee': client.me['email'].split('@')[0].upper(),
                 'project': data['project'],
                 'rounded': data['rounded'],
                 'task': data['task'],
