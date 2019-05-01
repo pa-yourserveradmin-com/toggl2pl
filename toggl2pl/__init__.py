@@ -532,17 +532,21 @@ class TogglReportsClient(TogglAPIClient):
         :rtype: dict
         """
         projects = dict()
-        for item in super().get(endpoint='workspaces/{wid}/projects'.format(wid=wid)):
-            if item['cid'] not in projects:
-                projects.update(
-                    {
-                        item['cid']: [
-                            item['name']
-                        ]
-                    }
-                )
-                continue
-            projects[item['cid']].append(item['name'])
+        try:
+            for item in super().get(endpoint='workspaces/{wid}/projects'.format(wid=wid)):
+                if item['cid'] not in projects:
+                    projects.update(
+                        {
+                            item['cid']: [
+                                item['name']
+                            ]
+                        }
+                    )
+                    continue
+                projects[item['cid']].append(item['name'])
+        except TypeError:
+            logging.debug(msg='it looks like you do not have any Toggl projects yet')
+            return projects
         return projects
 
     def tasks(self, since, until, wid):
