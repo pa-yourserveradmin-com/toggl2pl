@@ -41,6 +41,7 @@ build:linux:
     - apt install --assume-yes binutils
     - pip install virtualenv
     - virtualenv --python=python3 venv
+    - venv/bin/pip install --upgrade --requirement pyinstaller.txt
     - venv/bin/pip install --upgrade --requirement requirements.txt
   image: python:3.7.2-slim-stretch
   script:
@@ -61,6 +62,7 @@ build:windows:
     - pip install virtualenv
     - virtualenv venv
     - .\venv\Scripts\pip.exe install --upgrade pywin32
+    - .\venv\Scripts\pip.exe install --upgrade --requirement pyinstaller.txt
     - .\venv\Scripts\pip.exe install --upgrade --requirement requirements.txt
   script:
     - .\venv\Scripts\pyinstaller.exe --name %PACKAGE_NAME% --onefile .\scripts\%PACKAGE_NAME%
