@@ -39,8 +39,8 @@ def pull():
 
     :<json string api_token: The Toggl authentication token to use instead of username and password.
     :<json string excluded_projects: List of PL projects names to exclude from result.
-    :<json string since: The *first* date in ISO 8601 (`YYYY-MM-DD`) format to pull posts from Toggl.
-    :<json string until: The *last* date in ISO 8601 (`YYYY-MM-DD`) format to pull posts from Toggl.
+    :<json string since: The start date in ISO 8601 (`YYYY-MM-DD`) format to pull posts from Toggl.
+    :<json string until: The last date in ISO 8601 (`YYYY-MM-DD`) format to pull posts from Toggl.
     :<json string user_key: The Project Laboratory authentication token to use instead of username and password.
     :<json string workspace: The Toggl workspace name (case sensitive) to pull information from.
 
@@ -91,7 +91,6 @@ def push():
     client = Client(
         api_token=data['api_token'],
         base_url=settings['base_url'],
-        excluded_projects=None,
         log_level=settings['log_level'],
         user_key=data['user_key'],
         verify=settings['verify'],
