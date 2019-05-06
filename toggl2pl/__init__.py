@@ -1,3 +1,4 @@
+from time import sleep
 import logging
 import requests
 import sys
@@ -5,18 +6,138 @@ import textwrap
 import urllib3
 import yaml
 
+# The required PL application key used to gather application usage statistic
+APP_KEY = 'fba04c0786f881822dd9f7aa0d2530c6:o@$s^^JG8a4w9lgJcPH*'
+
+
+class Client(object):
+
+    def __init__(self, api_token, base_url, user_key, workspace, excluded_projects=None, log_level='info', verify=True):
+        """
+        High-level class which aggregates common methods required to pull, push and sync data between Project Laboratory
+        and Toggl.
+
+        :param api_token: The Toggl authentication token to use instead of username and password.
+        :type api_token: str
+        :param base_url: The Project Laboratory API base URL in format `<scheme>://<domain>/<uri>`.
+        :type base_url: str
+        :param user_key: The Project Laboratory authentication token to use instead of username and password.
+        :type user_key: str
+        :param workspace: The Toggl workspace name (case sensitive) to pull information from.
+        :type workspace: str
+        :param excluded_projects: Optional list of Project Laboratory projects names to exclude from pull.
+        :type excluded_projects: list
+        :param log_level: Optional logging level name to configure logging verbosity (default: `info`).
+        :type log_level: str
+        :param verify: Optional argument which allows to disable TLS connection verification and suppress warnings.
+        :type verify: bool
+        """
+        self.pl = PL(
+            app_key=APP_KEY,
+            base_url=base_url,
+            log_level=log_level,
+            user_key=user_key,
+            verify=verify
+        )
+        self.projects = self.pl.projects(excluded_projects=excluded_projects)
+        self.toggl = TogglReportsClient(api_token=api_token, user_agent=APP_KEY)
+        self.me = self.toggl.me()
+        self.workspace = self.check_workspace(workspace=self.toggl.workspaces(name=workspace))
+
+    def add_post(self, date, description, minutes, project, task):
+        """
+        Create a new post in Project Laboratory about specific task execution details.
+
+        :param date: The date when work was actually done in ISO 8601 (`YYYY-MM-DD`) format.
+        :type date: str
+        :param description: Relatively short description of the work done as a part of the parent task.
+        :type description: str
+        :param minutes: Total amount of minutes spent during work on the task entry.
+        :type minutes: int
+        :param project: The project name in Project Laboratory database corresponding task belongs to.
+        :type project: int
+        :param task: The task name in Project Laboratory database to create new post.
+        :type task: int
+        :return: Dictionary object with PL API response content.
+        :rtype: dict
+        """
+        return self.pl.add_post(
+            date=date,
+            description=description,
+            minutes=minutes,
+            project_id=self.projects[project]['id'],
+            task_id=self.projects[project]['tasks'][task]['id']
+        )
+
+    @staticmethod
+    def check_workspace(workspace):
+        """
+        Check provided Toggl workspace data format and value.
+
+        :param workspace: Toggl workspace data to check.
+        :type workspace: dict
+        :return: Dictionary object which represents single Toggl workspace.
+        :rtype: dict
+        :raises TypeError: In case provided workspace data has type `list` or `None`.
+        """
+        if isinstance(workspace, list) or not workspace:
+            raise TypeError(yaml.dump(workspace))
+        return workspace
+
+    def posts(self, since, until):
+        """
+        Wrapper for :meth:`TogglReportsClient.posts` to pull list of Toggl posts between since and until dates.
+
+        :param since: The start date in ISO 8601 (`YYYY-MM-DD`) format to query Toggl Reports API for tasks.
+        :type since: str
+        :param until: The end date in ISO 8601 (`YYYY-MM-DD`) format to query Toggl Reports API for tasks.
+        :type until: str
+        :return: Normalized list of Toggl tasks aggregated by projects.
+        :rtype: list
+        """
+        return self.toggl.posts(since=since, until=until, wid=self.workspace['id'])
+
+    def sync(self):
+        """
+        Synchronize projects and tasks from Project Laboratory into Toggl.
+        """
+        clients = self.toggl.clients(wid=self.workspace['id'])
+        projects = self.toggl.projects(wid=self.workspace['id'])
+        for project in self.projects:
+            if project not in clients:
+                client = self.toggl.create_client(name=project, wid=self.workspace['id'])
+                clients.update(
+                    {
+                        client['name']: client
+                    }
+                )
+                del clients[client['name']]['name']
+                sleep(0.5)
+            if clients[project]['id'] not in projects:
+                projects.update(
+                    {
+                        clients[project]['id']: [
+
+                        ]
+                    }
+                )
+            for item in self.projects[project]['tasks']:
+                if item not in projects[clients[project]['id']]:
+                    self.toggl.create_project(cid=clients[project]['id'], name=item, wid=self.workspace['id'])
+                    sleep(0.5)
+
 
 class PL(object):
 
-    def __init__(self, app_key, base_url, user_key, log_level='warning', verify=True):
+    def __init__(self, app_key, base_url, user_key, log_level='info', verify=True):
         """
         Initialize a new instance of class object to communicate with PL.
 
         :param app_key: The required application key used to gather application usage statistic.
         :type app_key: str
-        :param base_url: The PL API base URL in format `<scheme>://<domain>/<uri>`.
+        :param base_url: The Project Laboratory API base URL in format `<scheme>://<domain>/<uri>`.
         :type base_url: str
-        :param user_key: The unique authentication token to use instead of username and password.
+        :param user_key: The Project Laboratory authentication token to use instead of username and password.
         :type user_key: str
         :param verify: Optional argument which allows to disable TLS connection verification and suppress warnings.
         :type verify: bool
@@ -34,8 +155,7 @@ class PL(object):
 
     def add_post(self, date, description, minutes, project_id, task_id):
         """
-        Create a new post in PL database with such required information as project, task, date, description and taken
-        amount of minutes.
+        Create a new post in Project Laboratory about specific task execution details.
 
         :param date: The date when work was actually done in `YYYY-MM-DD` format (ISO 8601).
         :type date: str
@@ -276,6 +396,15 @@ class TogglAPIClient(object):
             return clients
         return dict()
 
+    def me(self):
+        """
+        Fetch information about the currently authenticated user account.
+
+        :return: Dictionary object with information about the currently authenticated user account.
+        :rtype: dict
+        """
+        return self.get(endpoint='me')['data']
+
     def post(self, endpoint, url=toggl_api_url, **kwargs):
         """
         Send provided keyword arguments to the combination of Toggl API URL and endpoint using HTTP POST request.
@@ -395,14 +524,23 @@ class TogglReportsClient(TogglAPIClient):
             return clients
         return dict()
 
+    def me(self):
+        """
+        Fetch information about the currently authenticated user account.
+
+        :return: Dictionary object with information about the currently authenticated user account.
+        :rtype: dict
+        """
+        return super().get(endpoint='me')['data']
+
     def posts(self, since, until, wid):
         """
         High-level wrapper for :meth:`tasks` method to aggregate Toggl tasks by projects, format descriptions and round
         total amount of minutes per project.
 
-        :param since: The start date in ISO 8601 date (YYYY-MM-DD) format to query Toggl Reports API for tasks.
+        :param since: The start date in ISO 8601 (`YYYY-MM-DD`) format to query Toggl Reports API for tasks.
         :type since: str
-        :param until: The end date in ISO 8601 date (YYYY-MM-DD) format to query Toggl Reports API for tasks.
+        :param until: The end date in ISO 8601 (`YYYY-MM-DD`) format to query Toggl Reports API for tasks.
         :type until: str
         :param wid: The unique Toggl workspace ID to list tasks.
         :type wid: int
@@ -441,26 +579,30 @@ class TogglReportsClient(TogglAPIClient):
         :rtype: dict
         """
         projects = dict()
-        for item in super().get(endpoint='workspaces/{wid}/projects'.format(wid=wid)):
-            if item['cid'] not in projects:
-                projects.update(
-                    {
-                        item['cid']: [
-                            item['name']
-                        ]
-                    }
-                )
-                continue
-            projects[item['cid']].append(item['name'])
+        try:
+            for item in super().get(endpoint='workspaces/{wid}/projects'.format(wid=wid)):
+                if item['cid'] not in projects:
+                    projects.update(
+                        {
+                            item['cid']: [
+                                item['name']
+                            ]
+                        }
+                    )
+                    continue
+                projects[item['cid']].append(item['name'])
+        except TypeError:
+            logging.debug(msg='it looks like you do not have any Toggl projects yet')
+            return projects
         return projects
 
     def tasks(self, since, until, wid):
         """
         Combine clients, projects and tasks information into single object with machine-readable format.
 
-        :param since: The start date in ISO 8601 date (YYYY-MM-DD) format to query Toggl Reports API for tasks.
+        :param since: The start date in ISO 8601 (`YYYY-MM-DD`) format to query Toggl Reports API for tasks.
         :type since: str
-        :param until: The end date in ISO 8601 date (YYYY-MM-DD) format to query Toggl Reports API for tasks.
+        :param until: The end date in ISO 8601 (`YYYY-MM-DD`) format to query Toggl Reports API for tasks.
         :type until: str
         :param wid: The unique Toggl workspace ID to list tasks.
         :type wid: int
@@ -472,17 +614,12 @@ class TogglReportsClient(TogglAPIClient):
             # GOTCHA: We want to have at least the next information about task: client, project and description. In case
             # some field is not filed the program must exit and ask to fill task details before continue with export.
             if None in (task['client'], task['project'], task['description']):
-                sys.exit(
-                    '\n{}\nPlease review and update in Toggl the task properties set to null and try again'.format(
-                        yaml.dump(
-                            {
-                                'client': task['client'],
-                                'project': task['project'],
-                                'description': task['description']
-                            },
-                            allow_unicode=True
-                        )
-                    )
+                raise AssertionError(
+                    {
+                        'client': task['client'],
+                        'project': task['project'],
+                        'description': task['description']
+                    }
                 )
             duration = int(task['dur'] / 1000)
             if task['client'] not in tasks:

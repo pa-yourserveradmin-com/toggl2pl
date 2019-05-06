@@ -1,22 +1,22 @@
 import unittest
-from toggl2pl.__main__ import check_workspace
+from toggl2pl import Client
 
 
 class TestCLI(unittest.TestCase):
 
     def test_check_workspace_list(self):
         with self.assertRaises(TypeError):
-            check_workspace(workspace=list())
+            Client.check_workspace(workspace=list())
 
     def test_check_workspace_none(self):
         with self.assertRaises(TypeError):
-            check_workspace(workspace=None)
+            Client.check_workspace(workspace=None)
 
     def test_check_workspace_dict(self):
         workspace = {
             'id': 1
         }
-        result = check_workspace(workspace=workspace)
+        result = Client.check_workspace(workspace=workspace)
         self.assertEqual(workspace, result)
 
 

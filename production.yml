@@ -1,0 +1,130 @@
+---
+version: '3.7'
+
+configs:
+  traefik_toml:
+    file: production/traefik.toml
+
+networks:
+  internal:
+    attachable: true
+    driver: overlay
+
+volumes:
+  elasticsearch:
+
+services:
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.7.1
+    deploy:
+      endpoint_mode: dnsrr
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: any
+        delay: 120s
+        window: 60s
+      update_config:
+        parallelism: 1
+        failure_action: rollback
+        delay: 120s
+    environment:
+      bootstrap.memory_lock: 'false'
+      cluster.name: 'toggl2es'
+      discovery.zen.ping.unicast.hosts: elasticsearch
+      ES_JAVA_OPTS: '-Xms512m -Xmx512m'
+      script.painless.regex.enabled: 'true'
+      xpack.monitoring.collection.enabled: 'true'
+    networks:
+      internal:
+    volumes:
+      - source: elasticsearch
+        target: /usr/share/elasticsearch/data
+        type: volume
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:6.7.1
+    deploy:
+      endpoint_mode: dnsrr
+      labels:
+        traefik.frontend.auth.forward.address: ${KIBANA_AUTH_URL}
+        traefik.backend: kibana
+        traefik.enable: 'true'
+        traefik.frontend.rule: Host:${KIBANA_HOST}
+        traefik.port: 5601
+      mode: global
+      placement:
+        constraints:
+          - node.role == worker
+      restart_policy:
+        condition: any
+        delay: 60s
+        window: 60s
+      update_config:
+        parallelism: 1
+        failure_action: rollback
+        delay: 30s
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    networks:
+      internal:
+
+  toggl2pl:
+    image: ${CI_REGISTRY}/${CI_PROJECT_NAMESPACE}/${PACKAGE_NAME}:latest
+    deploy:
+      endpoint_mode: dnsrr
+      labels:
+        traefik.backend: toggl2pl
+        traefik.enable: 'true'
+        traefik.frontend.rule: Host:${TOGGL2PL_HOST}
+        traefik.port: 5000
+      mode: global
+      placement:
+        constraints:
+          - node.role == worker
+      restart_policy:
+        condition: any
+        delay: 10s
+        window: 30s
+      update_config:
+        parallelism: 1
+        failure_action: rollback
+        delay: 30s
+    networks:
+      internal:
+
+  traefik:
+    image: traefik:1.7.11-alpine
+    configs:
+      - source: traefik_toml
+        target: /traefik.toml
+    deploy:
+      endpoint_mode: dnsrr
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: any
+        delay: 30s
+        window: 60s
+      update_config:
+        parallelism: 1
+        failure_action: rollback
+        delay: 30s
+    networks:
+      internal:
+    ports:
+      - published: 80
+        target: 80
+        mode: host
+      - published: 8080
+        target: 8080
+        mode: host
+    volumes:
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock

@@ -2,7 +2,7 @@
 variables:
   PACKAGE_ARCH: amd64
   PACKAGE_NAME: toggl2pl
-  PACKAGE_VERSION: 1.0.2
+  PACKAGE_VERSION: 1.0.3
 
 stages:
   - coverage
@@ -10,6 +10,7 @@ stages:
   - verify
   - package
   - sign
+  - release
 
 coverage:report:
   before_script:
@@ -26,6 +27,7 @@ coverage:report:
   stage: coverage
   tags:
     - docker
+    - only
   variables:
     DEBIAN_FRONTEND: noninteractive
 
@@ -39,6 +41,7 @@ build:linux:
     - apt install --assume-yes binutils
     - pip install virtualenv
     - virtualenv --python=python3 venv
+    - venv/bin/pip install --upgrade --requirement pyinstaller.txt
     - venv/bin/pip install --upgrade --requirement requirements.txt
   image: python:3.7.2-slim-stretch
   script:
@@ -46,6 +49,7 @@ build:linux:
   stage: build
   tags:
     - docker
+    - only
   variables:
     DEBIAN_FRONTEND: noninteractive
 
@@ -58,6 +62,7 @@ build:windows:
     - pip install virtualenv
     - virtualenv venv
     - .\venv\Scripts\pip.exe install --upgrade pywin32
+    - .\venv\Scripts\pip.exe install --upgrade --requirement pyinstaller.txt
     - .\venv\Scripts\pip.exe install --upgrade --requirement requirements.txt
   script:
     - .\venv\Scripts\pyinstaller.exe --name %PACKAGE_NAME% --onefile .\scripts\%PACKAGE_NAME%
@@ -77,6 +82,7 @@ verify:rpm:el7:
   stage: verify
   tags:
     - docker
+    - only
 
 verify:rpm:fc29:
   dependencies:
@@ -87,6 +93,7 @@ verify:rpm:fc29:
   stage: verify
   tags:
     - docker
+    - only
 
 verify:deb:jessie:
   dependencies:
@@ -97,6 +104,7 @@ verify:deb:jessie:
   stage: verify
   tags:
     - docker
+    - only
 
 verify:deb:stretch:
   dependencies:
@@ -107,6 +115,7 @@ verify:deb:stretch:
   stage: verify
   tags:
     - docker
+    - only
 
 verify:windows:
   dependencies:
@@ -117,6 +126,19 @@ verify:windows:
   stage: verify
   tags:
     - windows
+
+package:docker:image:
+  before_script:
+    - docker login -u gitlab-ci-token -p ${CI_BUILD_TOKEN} ${CI_REGISTRY}
+  dependencies:
+    - build:linux
+  script:
+    - docker build -t ${CI_REGISTRY}/${CI_PROJECT_NAMESPACE}/${PACKAGE_NAME}:${PACKAGE_VERSION} .
+    - docker push ${CI_REGISTRY}/${CI_PROJECT_NAMESPACE}/${PACKAGE_NAME}:${PACKAGE_VERSION}
+  stage: package
+  tags:
+    - docker
+    - shell
 
 package:linux:zip:
   artifacts:
@@ -133,6 +155,7 @@ package:linux:zip:
   stage: package
   tags:
     - docker
+    - only
 
 package:windows:zip:
   artifacts:
@@ -149,6 +172,7 @@ package:windows:zip:
   stage: package
   tags:
     - docker
+    - only
 
 sign:linux:zip:
   artifacts:
@@ -170,6 +194,7 @@ sign:linux:zip:
   stage: sign
   tags:
     - docker
+    - only
 
 sign:windows:zip:
   artifacts:
@@ -191,3 +216,18 @@ sign:windows:zip:
   stage: sign
   tags:
     - docker
+    - only
+
+release:docker:image:
+  before_script:
+    - docker login -u gitlab-ci-token -p ${CI_BUILD_TOKEN} ${CI_REGISTRY}
+  only:
+    - master
+  script:
+    - docker pull ${CI_REGISTRY}/${CI_PROJECT_NAMESPACE}/${PACKAGE_NAME}:${PACKAGE_VERSION}
+    - docker tag ${CI_REGISTRY}/${CI_PROJECT_NAMESPACE}/${PACKAGE_NAME}:${PACKAGE_VERSION} ${CI_REGISTRY}/${CI_PROJECT_NAMESPACE}/${PACKAGE_NAME}:latest
+    - docker push ${CI_REGISTRY}/${CI_PROJECT_NAMESPACE}/${PACKAGE_NAME}:latest
+  stage: release
+  tags:
+    - docker
+    - shell
