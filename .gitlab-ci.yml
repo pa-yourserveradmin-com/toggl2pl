@@ -2,7 +2,7 @@
 variables:
   PACKAGE_ARCH: amd64
   PACKAGE_NAME: toggl2pl
-  PACKAGE_VERSION: 1.0.3-dev
+  PACKAGE_VERSION: 1.0.3
 
 stages:
   - coverage
