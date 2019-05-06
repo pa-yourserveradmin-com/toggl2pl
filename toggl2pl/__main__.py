@@ -160,7 +160,8 @@ def run(known_args):
     :type known_args: :obj:`argparse.Namespace`
     """
     config = load_config(config=known_args.config)
-    if 'api_url' in config:
+    # TODO: Create API endpoint to synchronize projects and tasks between time trackers.
+    if 'api_url' in config and not known_args.sync:
         serverful(
             api_token=config['toggl']['api_token'],
             api_url=config['api_url'],
