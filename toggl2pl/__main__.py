@@ -1,6 +1,7 @@
 from datetime import datetime
 from paste.translogger import TransLogger
 from pathlib import Path
+from requests.exceptions import ConnectionError
 from tabulate import tabulate
 from toggl2pl.__serve__ import create_app
 from tqdm import tqdm
@@ -10,6 +11,7 @@ import argparse
 import logging
 import os
 import platform
+import requests
 import sys
 import yaml
 
@@ -111,9 +113,27 @@ def review(posts, tablefmt='fancy_grid', why_run=False):
 
 
 def serverful(api_token, api_url, since, until, user_key, workspace, excluded_projects=None, why_run=False):
-    # TODO: The code in this method must be moved from here to some class object representing API client.
-    from requests.exceptions import ConnectionError
-    import requests
+    """
+    Run application as API service client to use centralized logging and publishing features.
+
+    :param api_token: The Toggl authentication token to use instead of username and password.
+    :type api_token: str
+    :param api_url: The API service root URL to connect and communicate.
+    :type api_url: str
+    :param since: The start date in ISO 8601 (`YYYY-MM-DD`) format to pull posts from Toggl.
+    :type since: str
+    :param until: The last date in ISO 8601 (`YYYY-MM-DD`) format to pull posts from Toggl.
+    :type until: str
+    :param user_key: The Project Laboratory authentication token to use instead of username and password.
+    :type user_key: str
+    :param workspace: The Toggl workspace name (case sensitive) to pull information from.
+    :type workspace: str
+    :param excluded_projects: List of Project Laboratory projects names to exclude from pull.
+    :type excluded_projects: list
+    :param why_run: Optional argument to enable why-run mode useful to review posts without publishing.
+    :type why_run: bool
+    """
+    # TODO: The code below must be moved to some class representing API service client.
     try:
         posts = requests.get(
             url=f'{api_url}/posts/pull',
