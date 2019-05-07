@@ -7,8 +7,8 @@ into [PL][pl] (Project Laboratory).
 - [Usage](#usage)
   - [Installation](#installation)
     - [Production](#production)
-      - [System packages](#system-packages)
-      - [Python module](#python-module)
+      - [Precompiled binaries](#precompiled-binaries)
+      - [Using PIP](#using-pip)
     - [Development](#development)
   - [Command line interface](#command-line-interface)
     - [Configuration](#configuration)
@@ -40,17 +40,22 @@ maintained past January 1, 2020._
 
 #### Production
 
-##### System packages
+##### Precompiled binaries
 
-The application is distributing for Linux and Windows systems as single statically
-compiled executable files packaged in ZIP archives and signed with GPG key.
+For end users the preferable way to install application is to use executable files
+statically compiled for Linux and Windows platforms, packaged using ZIP and signed
+with GPG key.
 
 Example installation steps to execute on Linux:
 
 ```bash
-unzip toggl2pl-1.0.0-linux-amd64.zip
+export TOGGL2PL_VERSION="1.0.3"
+
+wget https://github.com/pa-yourserveradmin-com/toggl2pl/releases/download/v${TOGGL2PL_VERSION}/toggl2pl-${TOGGL2PL_VERSION}-linux-amd64.zip
+unzip toggl2pl-${TOGGL2PL_VERSION}-linux-amd64.zip
 install -v -D toggl2pl ~/.local/bin/toggl2pl
-rm -fv toggl2pl-1.0.0-linux-amd64.zip toggl2pl
+
+rm -fv toggl2pl-${TOGGL2PL_VERSION}-linux-amd64.zip toggl2pl
 ```
 
 Verify application work with your Linux distribution:
@@ -59,11 +64,17 @@ Verify application work with your Linux distribution:
 toggl2pl --help
 ```
 
-##### Python module
+##### Using PIP
 
 In case you need to install the application as a Python module (for example, you
-want to use its API in your new awesome module or application), please follow
-the next common Python modules manual installation steps:
+want to use its API in your new awesome module or application), the simplest way
+is to use `pip`:
+
+```bash
+pip install toggl2pl
+```
+
+#### Development
 
 1. Obtain the package sources and change working directory to the root of project.
 For example, clone the project using Git:
@@ -73,23 +84,7 @@ git clone https://github.com/pa-yourserveradmin-com/toggl2pl.git
 cd toggl2pl
 ```
 
-2. Depending on your use case you may want to install the package into virtual
-Python environment instead of modify the system root file system. Please, refer
-to the [Development](#development) section for details about `virtualenv` usage.
-
-3. The last step is to install the package data into your environment:
-
-```bash
-python setup.py install
-```
-
-The command above will build and install package data into correct directories,
-so you will be able to access module API from your code and execute scripts
-distributed with this module without any `PATH` modifications.
-
-#### Development
-
-The Python `virtualenv` module is recommended to start using the package in
+2. The Python `virtualenv` module is recommended to start using the package in
 development mode, i.e. without module installation into the system. Please, see
 `virtualenv` package installation instructions for some common used operating
 systems below.
@@ -97,13 +92,13 @@ systems below.
 Fedora 29:
 
 ```bash
-dnf --assumeyes install python-virtualenv python3-virtualenv
+sudo dnf --assumeyes install python-virtualenv python3-virtualenv
 ```
 
 Ubuntu 18:
 
 ```bash
-apt --assume-yes install python-virtualenv python3-virtualenv
+sudo apt --assume-yes install python-virtualenv python3-virtualenv
 ```
 
 Once the `virtualenv` package is installed, just create a new Python virtual
@@ -116,9 +111,9 @@ source venv/bin/activate
 pip install --requirement requirements.txt
 ```
 
-In case of no issues with Python virtual environment setup, now you should be
-able to try using the module. In order to check environment, just try to execute
-the next CLI command:
+3. In case if no issues with Python virtual environment setup, now you should be
+able to try using the module. In order to check environment, just execute the next
+CLI commands:
 
 ```bash
 cp -av scripts/toggl2pl toggl2pl.py
@@ -136,8 +131,8 @@ module in command line mode.
 #### Configuration
 
 By default CLI uses configuration file stored as `~/.toggl2pl/config.yml`. Please
-execute the next commands to install [config.yml.example](docs/_static/config.yml.example)
-as the default configuration file:
+execute the next commands to install [config.yml.example][config.yml.example] as
+the default configuration file:
 
 ```bash
 install -v -D docs/_static/config.yml.example ~/.toggl2pl/config.yml
@@ -145,6 +140,8 @@ install -v -D docs/_static/config.yml.example ~/.toggl2pl/config.yml
 
 Please open the newly created configuration file with your preferable text editor,
 read comments and update empty fields with your personal information.
+
+[config.yml.example]: https://github.com/pa-yourserveradmin-com/toggl2pl/blob/master/docs/_static/config.yml.example
 
 #### Examples
 
