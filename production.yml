@@ -2,6 +2,8 @@
 version: '3.7'
 
 configs:
+  consul_json:
+    file: production/consul.json
   traefik_toml:
     file: production/traefik.toml
 
@@ -11,9 +13,38 @@ networks:
     driver: overlay
 
 volumes:
+  consul_data:
   elasticsearch:
 
 services:
+
+  consul:
+    command: consul agent -config-file=/consul/config/consul.json
+    configs:
+      - source: consul_json
+        target: /consul/config/consul.json
+        mode: 0444
+    image: consul:1.5.3
+    deploy:
+      endpoint_mode: dnsrr
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: any
+        delay: 5s
+        window: 120s
+      update_config:
+        parallelism: 1
+        failure_action: rollback
+        delay: 30s
+    networks:
+      internal:
+    volumes:
+      - type: volume
+        source: consul_data
+        target: /consul/data
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.7.1
