@@ -26,7 +26,7 @@ into [PL][pl] (Project Laboratory).
 
 ## Requirements
 
-The module is written in pure Python and its work verified with Python `3.x`.
+The module is written in pure Python and its work verified with Python `>= 3.5`.
 
 As far as there are no low-level system calls (at least now) the module should
 be platform independent, i.e. work on any platform where Python is available.
