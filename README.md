@@ -26,7 +26,7 @@ into [PL][pl] (Project Laboratory).
 
 ## Requirements
 
-The module is written in pure Python and its work verified with Python `3.x`.
+The module is written in pure Python and its work verified with Python `>= 3.5`.
 
 As far as there are no low-level system calls (at least now) the module should
 be platform independent, i.e. work on any platform where Python is available.
@@ -49,7 +49,7 @@ with GPG key.
 Example installation steps to execute on Linux:
 
 ```bash
-export TOGGL2PL_VERSION="1.0.3"
+export TOGGL2PL_VERSION="1.0.4"
 
 wget https://github.com/pa-yourserveradmin-com/toggl2pl/releases/download/v${TOGGL2PL_VERSION}/toggl2pl-${TOGGL2PL_VERSION}-linux-amd64.zip
 unzip toggl2pl-${TOGGL2PL_VERSION}-linux-amd64.zip
