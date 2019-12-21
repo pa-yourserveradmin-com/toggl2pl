@@ -73,7 +73,7 @@ services:
       internal:
 
   toggl2pl:
-    image: ${CI_REGISTRY}/${CI_PROJECT_NAMESPACE}/${PACKAGE_NAME}:latest
+    image: payourserveradmincom/toggl2pl:latest
     deploy:
       endpoint_mode: dnsrr
       labels:
