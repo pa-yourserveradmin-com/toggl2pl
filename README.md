@@ -49,7 +49,7 @@ with GPG key.
 Example installation steps to execute on Linux:
 
 ```bash
-export TOGGL2PL_VERSION="1.0.4"
+export TOGGL2PL_VERSION="1.0.5"
 
 wget https://github.com/pa-yourserveradmin-com/toggl2pl/releases/download/v${TOGGL2PL_VERSION}/toggl2pl-${TOGGL2PL_VERSION}-linux-amd64.zip
 unzip toggl2pl-${TOGGL2PL_VERSION}-linux-amd64.zip

@@ -5,6 +5,6 @@ LABEL \
   description="Tool to simplify time entries export from Toggl into Project Laboratory" \
   maintainer="pa@yourserveradmin.com"
 
-RUN pip install toggl2pl==1.0.4
+RUN pip install toggl2pl==1.0.5
 
 CMD ["toggl2pl", "serve"]
