@@ -45,7 +45,7 @@ build:linux:
     - venv/bin/pip install --upgrade --requirement requirements.txt
   image: python:3.7.2-slim-stretch
   script:
-    - venv/bin/pyinstaller --name ${PACKAGE_NAME} --onefile scripts/${PACKAGE_NAME}
+    - venv/bin/pyinstaller --hidden-import="pkg_resources.py2_warn" --name ${PACKAGE_NAME} --onefile scripts/${PACKAGE_NAME}
   stage: build
   tags:
     - docker
@@ -65,7 +65,7 @@ build:windows:
     - .\venv\Scripts\pip.exe install --upgrade --requirement pyinstaller.txt
     - .\venv\Scripts\pip.exe install --upgrade --requirement requirements.txt
   script:
-    - .\venv\Scripts\pyinstaller.exe --name %PACKAGE_NAME% --onefile .\scripts\%PACKAGE_NAME%
+    - .\venv\Scripts\pyinstaller.exe --hidden-import="pkg_resources.py2_warn" --name %PACKAGE_NAME% --onefile .\scripts\%PACKAGE_NAME%
   stage: build
   tags:
     - python3.7
