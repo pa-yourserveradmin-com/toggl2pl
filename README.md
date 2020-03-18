@@ -49,7 +49,7 @@ with GPG key.
 Example installation steps to execute on Linux:
 
 ```bash
-export TOGGL2PL_VERSION="1.0.5"
+export TOGGL2PL_VERSION="1.0.6"
 
 wget https://github.com/pa-yourserveradmin-com/toggl2pl/releases/download/v${TOGGL2PL_VERSION}/toggl2pl-${TOGGL2PL_VERSION}-linux-amd64.zip
 unzip toggl2pl-${TOGGL2PL_VERSION}-linux-amd64.zip
@@ -225,19 +225,13 @@ tool on this platform.
 * [x] document existing code, CLI flags and configuration options with Sphinx.
 * [x] freeze existing functional and tweak code to resolve regressions and improve
 quality.
+- [x] use Flask and move logic to centralized server to communicate with it by using
+HTTP API with a minimal set of required options. But, at the same time keep ability
+to use the module in server-less mode and directly communicate with Toggl and PL API.
+- [x] use Elasticsearch with Kibana to store and visualize data passed through server
+to provide flexible reports and analytic mechanisms (for each user and for teams).
 * [ ] unit tests and coverage reports for existing minimal set of features.
 
-The list above is incomplete, because there are too many ideas and features which
-can be implemented, for example:
-
-- extend the list of [supported APIs](#supported-apis) by [Clockify][clockify]
-API in order to provide an alternative to [Toggl][toggl].
-- use, for example, Flask, move logic to centralized server and communicate with
-it by using HTTP API with a minimal set of required options. But, at the same time
-keep ability to use the module in server-less mode and directly communicate with
-Toggl and PL API.
-- use Elasticsearch with Kibana to store and visualize data passed through server
-to provide flexible reports and analytic mechanisms (for each user and for teams).
 
 ## Internals
 

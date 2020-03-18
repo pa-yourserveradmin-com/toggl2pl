@@ -502,6 +502,7 @@ class TogglReportsClient(TogglAPIClient):
         kwargs.update(
             {
                 'user_agent': self.user_agent,
+                'user_ids': self.me()['id'],
                 'workspace_id': wid
             }
         )
