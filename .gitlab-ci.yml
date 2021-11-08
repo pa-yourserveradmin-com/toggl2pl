@@ -97,19 +97,6 @@ verify:deb:stretch:
     - docker
     - only
 
-package:docker:image:
-  before_script:
-    - docker login -u gitlab-ci-token -p ${CI_BUILD_TOKEN} ${CI_REGISTRY}
-  dependencies:
-    - build:linux
-  script:
-    - docker build -t ${CI_REGISTRY}/${CI_PROJECT_NAMESPACE}/${PACKAGE_NAME}:${PACKAGE_VERSION} .
-    - docker push ${CI_REGISTRY}/${CI_PROJECT_NAMESPACE}/${PACKAGE_NAME}:${PACKAGE_VERSION}
-  stage: package
-  tags:
-    - docker
-    - shell
-
 package:linux:zip:
   artifacts:
     paths:
