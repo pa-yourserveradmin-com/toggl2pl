@@ -53,26 +53,6 @@ build:linux:
   variables:
     DEBIAN_FRONTEND: noninteractive
 
-build:windows:
-  artifacts:
-    paths:
-      - .\dist\%PACKAGE_NAME%.exe
-    expire_in: 15 mins
-  before_script:
-    - pip install virtualenv
-    - virtualenv venv
-    - .\venv\Scripts\pip.exe install --upgrade pywin32
-    - .\venv\Scripts\pip.exe install --upgrade --requirement pyinstaller.txt
-    - .\venv\Scripts\pip.exe install --upgrade --requirement requirements.txt
-  script:
-    - .\venv\Scripts\pyinstaller.exe --hidden-import="pkg_resources.py2_warn" --name %PACKAGE_NAME% --onefile .\scripts\%PACKAGE_NAME%
-  stage: build
-  tags:
-    - python3.7
-    - windows
-  variables:
-    PATH: C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files\Git\cmd;C:\Users\admin\AppData\Local\Programs\Python\Python37-32\Scripts\;C:\Users\admin\AppData\Local\Programs\Python\Python37-32\;C:\Users\admin\AppData\Local\Microsoft\WindowsApps;C:\Windows\System32\downlevel;
-
 verify:rpm:el7:
   dependencies:
     - build:linux
@@ -117,16 +97,6 @@ verify:deb:stretch:
     - docker
     - only
 
-verify:windows:
-  dependencies:
-    - build:windows
-  image: debian:stretch-slim
-  script:
-    - .\dist\%PACKAGE_NAME%.exe --help
-  stage: verify
-  tags:
-    - windows
-
 package:docker:image:
   before_script:
     - docker login -u gitlab-ci-token -p ${CI_BUILD_TOKEN} ${CI_REGISTRY}
@@ -157,23 +127,6 @@ package:linux:zip:
     - docker
     - only
 
-package:windows:zip:
-  artifacts:
-    paths:
-      - ${PACKAGE_NAME}-${PACKAGE_VERSION}-windows-${PACKAGE_ARCH}.zip
-    expire_in: 15 mins
-  before_script:
-    - dnf --assumeyes install zip
-  dependencies:
-    - build:windows
-  image: fedora:29
-  script:
-    - zip -9 -j ${PACKAGE_NAME}-${PACKAGE_VERSION}-windows-${PACKAGE_ARCH}.zip dist/${PACKAGE_NAME}.exe
-  stage: package
-  tags:
-    - docker
-    - only
-
 sign:linux:zip:
   artifacts:
     paths:
@@ -191,28 +144,6 @@ sign:linux:zip:
   script:
     - gpg2 --detach-sign --default-key ${PGP_FINGERPRINT} ${PACKAGE_NAME}-${PACKAGE_VERSION}-linux-${PACKAGE_ARCH}.zip
     - gpg2 --verify ${PACKAGE_NAME}-${PACKAGE_VERSION}-linux-${PACKAGE_ARCH}.zip.sig ${PACKAGE_NAME}-${PACKAGE_VERSION}-linux-${PACKAGE_ARCH}.zip
-  stage: sign
-  tags:
-    - docker
-    - only
-
-sign:windows:zip:
-  artifacts:
-    paths:
-      - ${PACKAGE_NAME}-${PACKAGE_VERSION}-windows-${PACKAGE_ARCH}.zip
-      - ${PACKAGE_NAME}-${PACKAGE_VERSION}-windows-${PACKAGE_ARCH}.zip.sig
-    expire_in: 1 hrs
-  before_script:
-    - gpg2 --import <(echo "${PGP_PRIVATE_KEY_BLOCK}")
-    - gpg2 --list-keys
-  dependencies:
-    - package:windows:zip
-  image: fedora:29
-  only:
-    - master
-  script:
-    - gpg2 --detach-sign --default-key ${PGP_FINGERPRINT} ${PACKAGE_NAME}-${PACKAGE_VERSION}-windows-${PACKAGE_ARCH}.zip
-    - gpg2 --verify ${PACKAGE_NAME}-${PACKAGE_VERSION}-windows-${PACKAGE_ARCH}.zip.sig ${PACKAGE_NAME}-${PACKAGE_VERSION}-windows-${PACKAGE_ARCH}.zip
   stage: sign
   tags:
     - docker
