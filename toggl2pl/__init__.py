@@ -283,7 +283,7 @@ class PL(object):
 
 class TogglAPIClient(object):
 
-    base_url = 'https://toggl.com'
+    base_url = 'https://api.track.toggl.com'
 
     toggl_api_version = 8
     toggl_api_url = '{base_url}/api/v{toggl_api_version}'.format(base_url=base_url, toggl_api_version=toggl_api_version)
@@ -449,7 +449,7 @@ class TogglAPIClient(object):
 
 class TogglReportsClient(TogglAPIClient):
 
-    base_url = 'https://toggl.com'
+    base_url = 'https://api.track.toggl.com'
 
     reports_api_version = 2
     reports_api_url = '{base_url}/reports/api/v{reports_api_version}'.format(
