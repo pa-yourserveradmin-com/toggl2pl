@@ -582,16 +582,19 @@ class TogglReportsClient(TogglAPIClient):
         projects = dict()
         try:
             for item in super().get(endpoint='workspaces/{wid}/projects'.format(wid=wid)):
-                if item['cid'] not in projects:
-                    projects.update(
-                        {
-                            item['cid']: [
-                                item['name']
-                            ]
-                        }
-                    )
-                    continue
-                projects[item['cid']].append(item['name'])
+                try:
+                    if item['cid'] not in projects:
+                        projects.update(
+                            {
+                                item['cid']: [
+                                    item['name']
+                                ]
+                            }
+                        )
+                        continue
+                    projects[item['cid']].append(item['name'])
+                except KeyError:
+                    logging.warning(msg=yaml.dump(item))
         except TypeError:
             logging.debug(msg='it looks like you do not have any Toggl projects yet')
             return projects
